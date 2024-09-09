@@ -143,10 +143,12 @@ def main():
         acceptor.start()
         application.start()
 
-        print("Market Maker started. Press Enter to quit.")
-        input()
+        print("Market Maker started.")
+        # Removed the input to quit
 
-        acceptor.stop()
+        # Use an infinite loop to keep the application running
+        while True:
+            time.sleep(1)  # Sleep to prevent busy waiting
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(f"Error starting market maker: {e}")
         sys.exit()
@@ -154,3 +156,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
