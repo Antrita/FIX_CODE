@@ -5,10 +5,8 @@ import random
 import threading
 import time
 
-
 def gen_order_id():
     return str(random.randint(100000, 999999))
-
 
 class MarketMaker(fix.Application):
     def __init__(self):
