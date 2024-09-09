@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="sdkName" value="FIX_Market" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="FIX_Market" project-jdk-type="Python SDK" />
+</project>
