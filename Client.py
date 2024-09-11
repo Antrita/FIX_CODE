@@ -5,11 +5,11 @@ import random
 import csv
 from datetime import datetime
 
-
+#Generate prices.
 def gen_order_id():
     return str(random.randint(100000, 999999))
 
-
+#Start session and write to file.
 class Client(fix.Application):
     def __init__(self):
         super().__init__()
@@ -131,7 +131,7 @@ class Client(fix.Application):
         fix.Session.sendToTarget(msg, self.session_id)
 
 
-def main():
+'''def main():
     try:
         settings = fix.SessionSettings("client.cfg")
         application = Client()
@@ -144,13 +144,13 @@ def main():
         print("FIX Client has started...")
         while True:
             print("\nEnter an action to perform:")
-            print("1 -> Place Buy Order")
-            print("2 -> Place Sell Order")
-            print("3 -> Subscribe to Market Data")
-            print("4 -> Cancel Market Data Subscription")
-            print("5 -> Order Cancel Request")
-            print("6 -> Order Status Request")
-            print("q -> Quit")
+            print("buy -> Place Buy Order")
+            print("sell -> Place Sell Order")
+            print("subscribe -> Subscribe to Market Data")
+            print("cancel -> Cancel Market Data Subscription")
+            print("status -> Order Cancel Request")
+            print("quit -> Order Status Request")
+            
 
             action = input("[Action]: ")
 
@@ -172,6 +172,80 @@ def main():
                 break
             else:
                 print("Invalid action. Please try again.")
+
+        initiator.stop()
+        application.csv_file.close()
+    except (fix.ConfigError, fix.RuntimeError) as e:
+        print(f"Error starting client: {e}")
+        sys.exit()
+
+
+if __name__ == "__main__":
+    main()'''
+
+
+def parse_input(input_string):
+    parts = input_string.split()
+    action = parts[0]
+    tags = {}
+    for i in range(1, len(parts), 2):
+        tag = parts[i][1:]  # Remove the leading '-'
+        value = parts[i + 1]
+        tags[tag] = value
+    return action, tags
+
+
+def main():
+    try:
+        settings = fix.SessionSettings("client.cfg")
+        application = Client()
+        store_factory = fix.FileStoreFactory(settings)
+        log_factory = fix.ScreenLogFactory(settings)
+        initiator = fix.SocketInitiator(application, store_factory, settings, log_factory)
+
+        initiator.start()
+
+        print("FIX Client has started...")
+        print("Enter commands in the format: action -tag1 value1 -tag2 value2 ...")
+        print("Available actions: buy, sell, subscribe, unsubscribe, cancel, status, quit")
+
+        while True:
+            user_input = input("[Command]: ")
+            print("Enter commands in the format: action -tag1 value1 -tag2 value2 ...")
+            print("Available actions: buy, sell, subscribe, unsubscribe, cancel, status, quit")
+            if user_input.lower() == 'quit':
+                break
+
+            try:
+                action, tags = parse_input(user_input)
+
+                if action == "buy":
+                    symbol = tags.get('55', 'USD/BRL')
+                    quantity = int(tags.get('38', '100'))
+                    application.place_order(fix.Side_BUY, symbol, quantity)
+                elif action == "sell":
+                    symbol = tags.get('55', 'USD/BRL')
+                    quantity = int(tags.get('38', '100'))
+                    application.place_order(fix.Side_SELL, symbol, quantity)
+                elif action == "subscribe":
+                    symbol = tags.get('55', 'USD/BRL')
+                    application.subscribe_market_data(symbol)
+                elif action == "unsubscribe":
+                    application.cancel_market_data()
+                elif action == "cancel":
+                    orig_cl_ord_id = tags.get('41', '')
+                    symbol = tags.get('55', 'USD/BRL')
+                    side = fix.Side_BUY if tags.get('54', '1') == '1' else fix.Side_SELL
+                    application.cancel_order(orig_cl_ord_id, symbol, side)
+                elif action == "status":
+                    cl_ord_id = tags.get('11', '')
+                    symbol = tags.get('55', 'USD/BRL')
+                    side = fix.Side_BUY if tags.get('54', '1') == '1' else fix.Side_SELL
+                    application.order_status_request(cl_ord_id, symbol, side)
+                else:
+                    print("Invalid action. Please try again.")
+            except Exception as e:
+                print(f"Error processing command: {e}")
 
         initiator.stop()
         application.csv_file.close()
