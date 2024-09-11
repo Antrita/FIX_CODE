@@ -29,14 +29,14 @@ python client.py
 
 A simple menu is displayed after the FIX application has started. You can use this menu to perform various actions:
 
-- 1 -> Place Buy Order
-- 2 -> Place Sell Order
-- 3 -> Subscribe to Market Data
-- 4 -> Cancel Market Data Subscription
-- 5 -> Order Cancel Request
-- 6 -> Order Status Request
-- logout -> Logout and Exit
-- d -> Start debugger
+- buy -> Place Buy Order
+- sell -> Place Sell Order
+- subscribe -> Subscribe to Market Data
+- unsubscribe -> Cancel Market Data Subscription
+- cancel -> Order Cancel Request
+- status -> Order Status Request
+- quit -> Logout and Exit
+
 
 Enter the corresponding number or action to perform the desired operation.
 
