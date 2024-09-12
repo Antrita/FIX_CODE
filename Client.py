@@ -131,57 +131,8 @@ class Client(fix.Application):
         fix.Session.sendToTarget(msg, self.session_id)
 
 
-'''def main():
-    try:
-        settings = fix.SessionSettings("client.cfg")
-        application = Client()
-        store_factory = fix.FileStoreFactory(settings)
-        log_factory = fix.ScreenLogFactory(settings)
-        initiator = fix.SocketInitiator(application, store_factory, settings, log_factory)
-
-        initiator.start()
-
-        print("FIX Client has started...")
-        while True:
-            print("\nEnter an action to perform:")
-            print("buy -> Place Buy Order")
-            print("sell -> Place Sell Order")
-            print("subscribe -> Subscribe to Market Data")
-            print("cancel -> Cancel Market Data Subscription")
-            print("status -> Order Cancel Request")
-            print("quit -> Order Status Request")
-            
-
-            action = input("[Action]: ")
-
-            if action == "1":
-                application.place_order(fix.Side_BUY)
-            elif action == "2":
-                application.place_order(fix.Side_SELL)
-            elif action == "3":
-                application.subscribe_market_data()
-            elif action == "4":
-                application.cancel_market_data()
-            elif action == "5":
-                orig_cl_ord_id = input("Enter the original ClOrdID to cancel: ")
-                application.cancel_order(orig_cl_ord_id)
-            elif action == "6":
-                cl_ord_id = input("Enter the ClOrdID to check status: ")
-                application.order_status_request(cl_ord_id)
-            elif action.lower() == "q":
-                break
-            else:
-                print("Invalid action. Please try again.")
-
-        initiator.stop()
-        application.csv_file.close()
-    except (fix.ConfigError, fix.RuntimeError) as e:
-        print(f"Error starting client: {e}")
-        sys.exit()
 
 
-if __name__ == "__main__":
-    main()'''
 
 
 def parse_input(input_string):
@@ -211,8 +162,7 @@ def main():
 
         while True:
             user_input = input("[Command]: ")
-            print("Enter commands in the format: action -tag1 value1 -tag2 value2 ...")
-            print("Available actions: buy, sell, subscribe, unsubscribe, cancel, status, quit")
+
             if user_input.lower() == 'quit':
                 break
 
