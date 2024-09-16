@@ -4,7 +4,9 @@ import quickfix44 as fix44
 import random
 import csv
 from datetime import datetime
-
+#import threading
+#import queue
+#import PySimpleGUI as sg
 #Generate prices.
 def gen_order_id():
     return str(random.randint(100000, 999999))
@@ -69,6 +71,9 @@ class Client(fix.Application):
             return ''
 
     def place_order(self, side, symbol="USD/BRL", quantity=100):
+
+        #def place_order(side, other_side, order, message_queue):
+        #order.setField(fix.Side(side))
         order = fix44.NewOrderSingle()
         order.setField(fix.ClOrdID(gen_order_id()))
         order.setField(fix.Symbol(symbol))

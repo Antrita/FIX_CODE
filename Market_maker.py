@@ -129,23 +129,23 @@ class MarketMaker(fix.Application):
             time.sleep(5)
 
     def start(self):
+        settings = fix.SessionSettings("Server.cfg")
+        store_factory = fix.FileStoreFactory(settings)
+        log_factory = fix.ScreenLogFactory(settings)
+        acceptor = fix.SocketAcceptor(self, store_factory, settings, log_factory)
+
+        acceptor.start()
+
+        # Start the price updating thread
         threading.Thread(target=self.update_prices, daemon=True).start()
 
 
 def main():
     try:
-        settings = fix.SessionSettings("Server.cfg")
         application = MarketMaker()
-        store_factory = fix.FileStoreFactory(settings)
-        log_factory = fix.ScreenLogFactory(settings)
-        acceptor = fix.SocketAcceptor(application, store_factory, settings, log_factory)
-
-        acceptor.start()
         application.start()
 
         print("Market Maker started.")
-        # Removed the input to quit
-
         # Use an infinite loop to keep the application running
         while True:
             time.sleep(1)  # Sleep to prevent busy waiting
@@ -156,4 +156,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
