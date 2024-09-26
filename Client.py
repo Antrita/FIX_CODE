@@ -2,12 +2,10 @@ import sys
 import quickfix as fix
 import quickfix44 as fix44
 import random
-import csv
 from datetime import datetime
 #import threading
 #import queue
-#import PySimpleGUI as sg
-#Generate prices.
+
 def gen_order_id():
     return str(random.randint(100000, 999999))
 
@@ -17,10 +15,7 @@ class Client(fix.Application):
         super().__init__()
         self.session_id = None
         self.md_req_id = None
-        self.csv_file = open('fix_messages.csv', 'w', newline='')
-        self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(
-            ['Date', 'Time', 'MsgType', 'Symbol', 'Side', 'OrderQty', 'Price', 'OrderID', 'ExecType', 'OrdStatus'])
+
 
     def onCreate(self, session_id):
         self.session_id = session_id
@@ -59,9 +54,6 @@ class Client(fix.Application):
         date = now.strftime("%Y-%m-%d")
         time = now.strftime("%H:%M:%S.%f")[:-3]
 
-        self.csv_writer.writerow(
-            [date, time, msg_type, symbol, side, order_qty, price, order_id, exec_type, ord_status])
-        self.csv_file.flush()
 
     def get_field_value(self, message, field):
         try:
@@ -72,8 +64,7 @@ class Client(fix.Application):
 
     def place_order(self, side, symbol="USD/BRL", quantity=100):
 
-        #def place_order(side, other_side, order, message_queue):
-        #order.setField(fix.Side(side))
+
         order = fix44.NewOrderSingle()
         order.setField(fix.ClOrdID(gen_order_id()))
         order.setField(fix.Symbol(symbol))
@@ -203,7 +194,7 @@ def main():
                 print(f"Error processing command: {e}")
 
         initiator.stop()
-        application.csv_file.close()
+
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(f"Error starting client: {e}")
         sys.exit()
