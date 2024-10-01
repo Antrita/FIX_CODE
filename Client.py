@@ -26,22 +26,25 @@ class Client(fix.Application):
         print(f"Logout - {session_id}")
 
     def toAdmin(self, message, session_id):
-        pass
+        self.format_and_print_message("Sending admin", message)
 
     def fromAdmin(self, message, session_id):
-        pass
+        self.format_and_print_message("Received admin", message)
 
     def toApp(self, message, session_id):
-        print(f"Sending message: {message.toString().replace(chr(1), ' | ')}")
+        self.format_and_print_message("Sending app", message)
 
     def fromApp(self, message, session_id):
+        self.format_and_print_message("Received app", message)
         msgType = fix.MsgType()
         message.getHeader().getField(msgType)
 
         if msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
             self.on_market_data(message)
-        else:
-            print(f"Received message: {message.toString().replace(chr(1), ' | ')}")
+
+    def format_and_print_message(self, prefix, message):
+        formatted_message = message.toString().replace(chr(1), ' | ')
+        print(f"{prefix}: {formatted_message}")
 
     def on_market_data(self, message):
         symbol = self.get_field_value(message, fix.Symbol())
@@ -77,8 +80,6 @@ class Client(fix.Application):
             return ''
 
     def place_order(self, side, symbol="USD/BRL", quantity=100):
-
-
         order = fix44.NewOrderSingle()
         order.setField(fix.ClOrdID(gen_order_id()))
         order.setField(fix.Symbol(symbol))
@@ -125,10 +126,7 @@ class Client(fix.Application):
     def cancel_order(self, orig_cl_ord_id, symbol="USD/BRL", side=fix.Side_BUY):
         msg = fix44.OrderCancelRequest()
         msg.setField(fix.OrigClOrdID(orig_cl_ord_id))
-        msg.setField(fix.ClOrdID(gen_order_id()))
-        msg.setField(fix.Symbol(symbol))
-        msg.setField(fix.Side(side))
-        msg.setField(fix.TransactTime())
+        msg.set
 
         fix.Session.sendToTarget(msg, self.session_id)
 
