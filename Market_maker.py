@@ -13,7 +13,7 @@ class MarketMaker(fix.Application):
         super().__init__()
         self.session_id = None
         self.symbols = ["USD/BRL"]
-        self.prices = {symbol: random.uniform(100, 1000) for symbol in self.symbols}
+        self.prices = {symbol: random.uniform(4.5, 5.5) for symbol in self.symbols}
         self.subscriptions = set()
 
     def onCreate(self, session_id):
@@ -33,10 +33,10 @@ class MarketMaker(fix.Application):
         pass
 
     def toApp(self, message, session_id):
-        print(f"Sending message: {message}")
+        print(f"Sending message: {message.toString().replace(chr(1), ' | ')}")
 
     def fromApp(self, message, session_id):
-        print(f"Received message: {message}")
+        print(f"Received message: {message.toString().replace(chr(1), ' | ')}")
         msgType = fix.MsgType()
         message.getHeader().getField(msgType)
 
@@ -46,6 +46,8 @@ class MarketMaker(fix.Application):
             self.handle_cancel_request(message, session_id)
         elif msgType.getValue() == fix.MsgType_MarketDataRequest:
             self.handle_market_data_request(message, session_id)
+        elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
+            self.handle_order_status_request(message, session_id)
 
     def handle_new_order(self, message, session_id):
         order = fix44.ExecutionReport()
@@ -89,70 +91,98 @@ class MarketMaker(fix.Application):
     def handle_market_data_request(self, message, session_id):
         mdReqID = fix.MDReqID()
         subscriptionRequestType = fix.SubscriptionRequestType()
+        symbol = fix.Symbol()
         message.getField(mdReqID)
         message.getField(subscriptionRequestType)
+        message.getField(symbol)
 
         if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
-            self.subscriptions.add(mdReqID.getValue())
-            self.send_market_data(mdReqID.getValue(), session_id)
+            self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
+            self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
         elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
-            self.subscriptions.remove(mdReqID.getValue())
+            self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
 
-    def send_market_data(self, md_req_id, session_id):
-        for symbol in self.symbols:
-            snapshot = fix44.MarketDataSnapshotFullRefresh()
-            snapshot.setField(fix.MDReqID(md_req_id))
-            snapshot.setField(fix.Symbol(symbol))
+    def send_market_data(self, md_req_id, symbol, session_id):
+        snapshot = fix44.MarketDataSnapshotFullRefresh()
+        snapshot.setField(fix.MDReqID(md_req_id))
+        snapshot.setField(fix.Symbol(symbol))
 
-            group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-            group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-            group.setField(fix.MDEntryPx(self.prices[symbol] - 0.01))
-            group.setField(fix.MDEntrySize(100))
-            snapshot.addGroup(group)
+        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        group.setField(fix.MDEntryType(fix.MDEntryType_BID))
+        group.setField(fix.MDEntryPx(self.prices[symbol] - 0.01))
+        group.setField(fix.MDEntrySize(100000))
+        snapshot.addGroup(group)
 
-            group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-            group.setField(fix.MDEntryPx(self.prices[symbol] + 0.01))
-            group.setField(fix.MDEntrySize(100))
-            snapshot.addGroup(group)
+        group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
+        group.setField(fix.MDEntryPx(self.prices[symbol] + 0.01))
+        group.setField(fix.MDEntrySize(100000))
+        snapshot.addGroup(group)
 
-            fix.Session.sendToTarget(snapshot, session_id)
+        fix.Session.sendToTarget(snapshot, session_id)
+
+    def handle_order_status_request(self, message, session_id):
+        status = fix44.ExecutionReport()
+        status.setField(fix.OrderID(gen_order_id()))
+        status.setField(fix.ExecID(gen_order_id()))
+        status.setField(fix.ExecType(fix.ExecType_ORDER_STATUS))
+        status.setField(fix.OrdStatus(fix.OrdStatus_NEW))
+
+        clOrdID = fix.ClOrdID()
+        symbol = fix.Symbol()
+        side = fix.Side()
+
+        message.getField(clOrdID)
+        message.getField(symbol)
+        message.getField(side)
+
+        status.setField(clOrdID)
+        status.setField(symbol)
+        status.setField(side)
+        status.setField(fix.LeavesQty(0))
+        status.setField(fix.CumQty(0))
+        status.setField(fix.AvgPx(0))
+
+        fix.Session.sendToTarget(status, session_id)
 
     def update_prices(self):
         while True:
             for symbol in self.symbols:
-                self.prices[symbol] += random.uniform(-0.5, 0.5)
-                self.prices[symbol] = max(0.01, self.prices[symbol])
+                self.prices[symbol] += random.uniform(-0.05, 0.05)
+                self.prices[symbol] = max(4.0, min(self.prices[symbol], 6.0))
 
-            for md_req_id in self.subscriptions:
-                self.send_market_data(md_req_id, self.session_id)
+            for md_req_id, symbol in self.subscriptions:
+                self.send_market_data(md_req_id, symbol, self.session_id)
 
-            time.sleep(5)
+            time.sleep(1)
 
     def start(self):
-        settings = fix.SessionSettings("Server.cfg")
-        store_factory = fix.FileStoreFactory(settings)
-        log_factory = fix.ScreenLogFactory(settings)
-        acceptor = fix.SocketAcceptor(self, store_factory, settings, log_factory)
+        try:
+            settings = fix.SessionSettings("Server.cfg")
+            store_factory = fix.FileStoreFactory(settings)
+            log_factory = fix.ScreenLogFactory(settings)
+            acceptor = fix.SocketAcceptor(self, store_factory, settings, log_factory)
 
-        acceptor.start()
+            acceptor.start()
 
-        # Start the price updating thread
-        threading.Thread(target=self.update_prices, daemon=True).start()
+            # Start the price updating thread
+            threading.Thread(target=self.update_prices, daemon=True).start()
 
+            print("Market Maker started.")
+            while True:
+                time.sleep(1)
+        except (fix.ConfigError, fix.RuntimeError) as e:
+            print(f"Error starting market maker: {e}")
+            sys.exit(1)
 
 def main():
     try:
         application = MarketMaker()
         application.start()
-
-        print("Market Maker started.")
-        # Use an infinite loop to keep the application running
-        while True:
-            time.sleep(1)  # Sleep to prevent busy waiting
-    except (fix.ConfigError, fix.RuntimeError) as e:
-        print(f"Error starting market maker: {e}")
-        sys.exit()
-
+    except KeyboardInterrupt:
+        print("Market Maker stopped.")
+    except Exception as e:
+        print(f"Error in Market Maker: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
