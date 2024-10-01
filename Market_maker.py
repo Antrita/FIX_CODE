@@ -27,16 +27,16 @@ class MarketMaker(fix.Application):
         print(f"Logout - {session_id}")
 
     def toAdmin(self, message, session_id):
-        pass
+        self.format_and_print_message("Sending admin", message)
 
     def fromAdmin(self, message, session_id):
-        pass
+        self.format_and_print_message("Received admin", message)
 
     def toApp(self, message, session_id):
-        print(f"Sending message: {message.toString().replace(chr(1), ' | ')}")
+        self.format_and_print_message("Sending app", message)
 
     def fromApp(self, message, session_id):
-        print(f"Received message: {message.toString().replace(chr(1), ' | ')}")
+        self.format_and_print_message("Received app", message)
         msgType = fix.MsgType()
         message.getHeader().getField(msgType)
 
@@ -48,6 +48,10 @@ class MarketMaker(fix.Application):
             self.handle_market_data_request(message, session_id)
         elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
             self.handle_order_status_request(message, session_id)
+
+    def format_and_print_message(self, prefix, message):
+        formatted_message = message.toString().replace(chr(1), ' | ')
+        print(f"{prefix}: {formatted_message}")
 
     def handle_new_order(self, message, session_id):
         order = fix44.ExecutionReport()
@@ -85,6 +89,11 @@ class MarketMaker(fix.Application):
         cancel.setField(fix.OrdStatus(fix.OrdStatus_REJECTED))
         cancel.setField(fix.CxlRejResponseTo(fix.CxlRejResponseTo_ORDER_CANCEL_REQUEST))
         cancel.setField(fix.CxlRejReason(fix.CxlRejReason_OTHER))
+
+        symbol = fix.Symbol()
+        if message.isSetField(symbol):
+            message.getField(symbol)
+            cancel.setField(symbol)
 
         fix.Session.sendToTarget(cancel, session_id)
 
@@ -153,7 +162,7 @@ class MarketMaker(fix.Application):
             for md_req_id, symbol in self.subscriptions:
                 self.send_market_data(md_req_id, symbol, self.session_id)
 
-            time.sleep(1)
+            time.sleep(6)  # Changed to 6 seconds as requested
 
     def start(self):
         try:
