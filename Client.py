@@ -3,17 +3,19 @@ import quickfix as fix
 import quickfix44 as fix44
 import random
 from datetime import datetime
-
+#import threading
+#import queue
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
 
-
+#Start session and write to file.
 class Client(fix.Application):
     def __init__(self):
         super().__init__()
         self.session_id = None
         self.md_req_id = None
+
 
     def onCreate(self, session_id):
         self.session_id = session_id
@@ -26,51 +28,32 @@ class Client(fix.Application):
         print(f"Logout - {session_id}")
 
     def toAdmin(self, message, session_id):
-        self.format_and_print_message("Sending admin", message)
+        pass
 
     def fromAdmin(self, message, session_id):
-        self.format_and_print_message("Received admin", message)
+        pass
 
     def toApp(self, message, session_id):
-        self.format_and_print_message("Sending app", message)
+        print(f"Sending message: {message}")
 
     def fromApp(self, message, session_id):
-        self.format_and_print_message("Received app", message)
-        msgType = fix.MsgType()
-        message.getHeader().getField(msgType)
+        print(f"Received message: {message}")
+        self.log_message(message)
 
-        if msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
-            self.on_market_data(message)
-
-    def format_and_print_message(self, prefix, message):
-        formatted_message = message.toString().replace(chr(1), ' | ')
-        print(f"{prefix}: {formatted_message}")
-
-    def on_market_data(self, message):
+    def log_message(self, message):
+        msg_type = self.get_field_value(message, fix.MsgType())
         symbol = self.get_field_value(message, fix.Symbol())
-        md_req_id = self.get_field_value(message, fix.MDReqID())
+        side = self.get_field_value(message, fix.Side())
+        order_qty = self.get_field_value(message, fix.OrderQty())
+        price = self.get_field_value(message, fix.Price())
+        order_id = self.get_field_value(message, fix.OrderID())
+        exec_type = self.get_field_value(message, fix.ExecType())
+        ord_status = self.get_field_value(message, fix.OrdStatus())
 
-        bid_price = offer_price = "N/A"
-        bid_size = offer_size = "N/A"
+        now = datetime.now()
+        date = now.strftime("%Y-%m-%d")
+        time = now.strftime("%H:%M:%S.%f")[:-3]
 
-        no_md_entries = fix.NoMDEntries()
-        message.getField(no_md_entries)
-
-        for i in range(no_md_entries.getValue()):
-            group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-            message.getGroup(i + 1, group)
-
-            entry_type = fix.MDEntryType()
-            group.getField(entry_type)
-
-            if entry_type.getValue() == fix.MDEntryType_BID:
-                bid_price = self.get_field_value(group, fix.MDEntryPx())
-                bid_size = self.get_field_value(group, fix.MDEntrySize())
-            elif entry_type.getValue() == fix.MDEntryType_OFFER:
-                offer_price = self.get_field_value(group, fix.MDEntryPx())
-                offer_size = self.get_field_value(group, fix.MDEntrySize())
-
-        print(f"Market Data - Symbol: {symbol}, Bid: {bid_price} ({bid_size}), Offer: {offer_price} ({offer_size})")
 
     def get_field_value(self, message, field):
         try:
@@ -80,6 +63,8 @@ class Client(fix.Application):
             return ''
 
     def place_order(self, side, symbol="USD/BRL", quantity=100):
+
+
         order = fix44.NewOrderSingle()
         order.setField(fix.ClOrdID(gen_order_id()))
         order.setField(fix.Symbol(symbol))
@@ -126,7 +111,10 @@ class Client(fix.Application):
     def cancel_order(self, orig_cl_ord_id, symbol="USD/BRL", side=fix.Side_BUY):
         msg = fix44.OrderCancelRequest()
         msg.setField(fix.OrigClOrdID(orig_cl_ord_id))
-        msg.set
+        msg.setField(fix.ClOrdID(gen_order_id()))
+        msg.setField(fix.Symbol(symbol))
+        msg.setField(fix.Side(side))
+        msg.setField(fix.TransactTime())
 
         fix.Session.sendToTarget(msg, self.session_id)
 
@@ -210,6 +198,7 @@ def main():
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(f"Error starting client: {e}")
         sys.exit()
+
 
 if __name__ == "__main__":
     main()
