@@ -7,15 +7,25 @@ import time
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
+def generate_prices():
+    mid_price = random.uniform(4.5, 5.5)
+    spread = random.uniform(0.02, 0.05)
+    bid = mid_price - spread / 2
+    ask = mid_price + spread / 2
+    return {"bid": round(bid, 4), "ask": round(ask, 4)}
 
 class MarketMaker(fix.Application):
     def __init__(self):
         super().__init__()
         self.session_id = None
         self.symbols = ["USD/BRL"]
-        self.prices = {symbol: random.uniform(4.5, 5.5) for symbol in self.symbols}
+        self.prices = {symbol: generate_prices() for symbol in self.symbols}
         self.subscriptions = set()
         self.orders = {}
+
+
+
+
     def onCreate(self, session_id):
         self.session_id = session_id
         print(f"Session created - {session_id}")
@@ -153,8 +163,10 @@ class MarketMaker(fix.Application):
         snapshot.setField(fix.MDReqID(md_req_id))
         snapshot.setField(fix.Symbol(symbol))
 
-        bid_price = self.prices[symbol] - 0.01
-        offer_price = self.prices[symbol] + 0.01
+        # Update prices
+        self.prices[symbol] = self.generate_prices()
+        bid_price = self.prices[symbol]["bid"]
+        ask_price = self.prices[symbol]["ask"]
 
         # Add bid
         group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
@@ -163,12 +175,16 @@ class MarketMaker(fix.Application):
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
 
-        # Add offer
+        # Add ask
         group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(offer_price))
+        group.setField(fix.MDEntryPx(ask_price))
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
+
+        # Add specific bid and ask price tags
+        snapshot.setField(270, str(bid_price))  # Bid price
+        snapshot.setField(271, str(ask_price))  # Ask price
 
         self.format_and_print_message("Sending MarketDataSnapshotFullRefresh", snapshot)
         fix.Session.sendToTarget(snapshot, session_id)
@@ -176,8 +192,7 @@ class MarketMaker(fix.Application):
     def update_prices(self):
         while True:
             for symbol in self.symbols:
-                self.prices[symbol] += random.uniform(-0.05, 0.05)
-                self.prices[symbol] = max(4.0, min(self.prices[symbol], 6.0))
+                self.prices[symbol] = generate_prices()
 
             for md_req_id, symbol in self.subscriptions:
                 self.send_market_data(md_req_id, symbol, self.session_id)
@@ -280,7 +295,7 @@ class MarketMaker(fix.Application):
                 time.sleep(1)
         except (fix.ConfigError, fix.RuntimeError) as e:
             print(f"Error starting market maker: {e}")
-            sys.exit(1)
+
 
 def main():
     try:
