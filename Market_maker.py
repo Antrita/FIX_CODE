@@ -15,7 +15,7 @@ class MarketMaker(fix.Application):
         self.symbols = ["USD/BRL"]
         self.prices = {symbol: random.uniform(4.5, 5.5) for symbol in self.symbols}
         self.subscriptions = set()
-
+        self.orders = {}
     def onCreate(self, session_id):
         self.session_id = session_id
         print(f"Session created - {session_id}")
@@ -55,11 +55,6 @@ class MarketMaker(fix.Application):
 
     def handle_new_order(self, message, session_id):
         order = fix44.ExecutionReport()
-        order.setField(fix.OrderID(gen_order_id()))
-        order.setField(fix.ExecID(gen_order_id()))
-        order.setField(fix.ExecType(fix.ExecType_NEW))
-        order.setField(fix.OrdStatus(fix.OrdStatus_NEW))
-
         clOrdID = fix.ClOrdID()
         symbol = fix.Symbol()
         side = fix.Side()
@@ -70,32 +65,65 @@ class MarketMaker(fix.Application):
         message.getField(side)
         message.getField(orderQty)
 
+        orderID = gen_order_id()
+        self.orders[orderID] = {
+            'clOrdID': clOrdID.getValue(),
+            'symbol': symbol.getValue(),
+            'side': side.getValue(),
+            'orderQty': orderQty.getValue(),
+            'leavesQty': orderQty.getValue(),
+            'cumQty': 0,
+            'avgPx': 0
+        }
+
+        order.setField(fix.OrderID(orderID))
+        order.setField(fix.ExecID(gen_order_id()))
+        order.setField(fix.ExecType(fix.ExecType_NEW))
+        order.setField(fix.OrdStatus(fix.OrdStatus_NEW))
         order.setField(clOrdID)
         order.setField(symbol)
         order.setField(side)
         order.setField(orderQty)
-        order.setField(fix.LastQty(orderQty.getValue()))
-        order.setField(fix.LastPx(self.prices[symbol.getValue()]))
-        order.setField(fix.CumQty(orderQty.getValue()))
-        order.setField(fix.AvgPx(self.prices[symbol.getValue()]))
+        order.setField(fix.LeavesQty(orderQty.getValue()))  # Add LeavesQty
+        order.setField(fix.CumQty(0))
+        order.setField(fix.AvgPx(0))
 
         fix.Session.sendToTarget(order, session_id)
 
     def handle_cancel_request(self, message, session_id):
-        cancel = fix44.OrderCancelReject()
-        cancel.setField(fix.OrderID(gen_order_id()))
-        cancel.setField(fix.ClOrdID(gen_order_id()))
-        cancel.setField(fix.OrigClOrdID(message.getField(fix.OrigClOrdID())))
-        cancel.setField(fix.OrdStatus(fix.OrdStatus_REJECTED))
-        cancel.setField(fix.CxlRejResponseTo(fix.CxlRejResponseTo_ORDER_CANCEL_REQUEST))
-        cancel.setField(fix.CxlRejReason(fix.CxlRejReason_OTHER))
+        origClOrdID = fix.OrigClOrdID()
+        message.getField(origClOrdID)
 
-        symbol = fix.Symbol()
-        if message.isSetField(symbol):
-            message.getField(symbol)
-            cancel.setField(symbol)
+        # Find the order
+        order = next((order for order in self.orders.values() if order['clOrdID'] == origClOrdID.getValue()), None)
 
-        fix.Session.sendToTarget(cancel, session_id)
+        if order:
+            orderID = next(id for id, o in self.orders.items() if o == order)
+            cancel = fix44.ExecutionReport()
+            cancel.setField(fix.OrderID(orderID))
+            cancel.setField(fix.ExecID(gen_order_id()))
+            cancel.setField(fix.ExecType(fix.ExecType_CANCELED))
+            cancel.setField(fix.OrdStatus(fix.OrdStatus_CANCELED))
+            cancel.setField(origClOrdID)
+            cancel.setField(fix.Symbol(order['symbol']))
+            cancel.setField(fix.Side(order['side']))
+            cancel.setField(fix.LeavesQty(0))
+            cancel.setField(fix.CumQty(order['cumQty']))
+            cancel.setField(fix.AvgPx(order['avgPx']))
+
+            del self.orders[orderID]
+            fix.Session.sendToTarget(cancel, session_id)
+        else:
+            # Order not found, send reject
+            reject = fix44.OrderCancelReject()
+            reject.setField(fix.OrderID("NONE"))
+            reject.setField(fix.ClOrdID(message.getField(fix.ClOrdID())))
+            reject.setField(origClOrdID)
+            reject.setField(fix.OrdStatus(fix.OrdStatus_REJECTED))
+            reject.setField(fix.CxlRejResponseTo(fix.CxlRejResponseTo_ORDER_CANCEL_REQUEST))
+            reject.setField(fix.CxlRejReason(fix.CxlRejReason_UNKNOWN_ORDER))
+
+            fix.Session.sendToTarget(reject, session_id)
 
     def handle_market_data_request(self, message, session_id):
         mdReqID = fix.MDReqID()
@@ -130,28 +158,36 @@ class MarketMaker(fix.Application):
         fix.Session.sendToTarget(snapshot, session_id)
 
     def handle_order_status_request(self, message, session_id):
-        status = fix44.ExecutionReport()
-        status.setField(fix.OrderID(gen_order_id()))
-        status.setField(fix.ExecID(gen_order_id()))
-        status.setField(fix.ExecType(fix.ExecType_ORDER_STATUS))
-        status.setField(fix.OrdStatus(fix.OrdStatus_NEW))
-
         clOrdID = fix.ClOrdID()
-        symbol = fix.Symbol()
-        side = fix.Side()
-
         message.getField(clOrdID)
-        message.getField(symbol)
-        message.getField(side)
 
-        status.setField(clOrdID)
-        status.setField(symbol)
-        status.setField(side)
-        status.setField(fix.LeavesQty(0))
-        status.setField(fix.CumQty(0))
-        status.setField(fix.AvgPx(0))
+        # Find the order
+        order = next((order for order in self.orders.values() if order['clOrdID'] == clOrdID.getValue()), None)
 
-        fix.Session.sendToTarget(status, session_id)
+        if order:
+            orderID = next(id for id, o in self.orders.items() if o == order)
+            status = fix44.ExecutionReport()
+            status.setField(fix.OrderID(orderID))
+            status.setField(fix.ExecID(gen_order_id()))
+            status.setField(fix.ExecType(fix.ExecType_ORDER_STATUS))
+            status.setField(fix.OrdStatus(fix.OrdStatus_NEW))  # Assuming all orders are still NEW
+            status.setField(clOrdID)
+            status.setField(fix.Symbol(order['symbol']))
+            status.setField(fix.Side(order['side']))
+            status.setField(fix.OrderQty(order['orderQty']))
+            status.setField(fix.LeavesQty(order['leavesQty']))
+            status.setField(fix.CumQty(order['cumQty']))
+            status.setField(fix.AvgPx(order['avgPx']))
+
+            fix.Session.sendToTarget(status, session_id)
+        else:
+            # Order not found, send reject
+            reject = fix44.BusinessMessageReject()
+            reject.setField(fix.RefMsgType(fix.MsgType_OrderStatusRequest))
+            reject.setField(fix.BusinessRejectReason(fix.BusinessRejectReason_UNKNOWN_ID))
+            reject.setField(fix.Text("Unknown order"))
+
+            fix.Session.sendToTarget(reject, session_id)
 
     def update_prices(self):
         while True:
