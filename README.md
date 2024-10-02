@@ -4,7 +4,7 @@ This repository contains a simple implementation of a FIX (Financial Information
 
 ## Introduction
 
-The provided code is a basic market maker application that can handle various FIX messages such as New Order Single, Order Cancel Request, and Market Data Request. It simulates the behavior of a market maker by sending back appropriate responses and updating market data.
+The provided code is a basic market maker application that can handle various FIX messages such as New Single Order, Order Cancel Request, and Market Data Request. It simulates the behavior of a market maker by sending back appropriate responses and updating market data.
 
 ## Getting Started
 
@@ -23,7 +23,7 @@ python client.py
 
 - Python 3.9: The python version used for the implementation.
 - QuickFIX: A C++ library for FIX protocol development and message parsing.
-- Make sure to download '[FIX44.xml](https://github.com/quickfix/quickfix/blob/master/spec/FIX44.xml)' and add it to your working directory.
+- Make sure to download [FIX44.xml](https://github.com/quickfix/quickfix/blob/master/spec/FIX44.xml) and add it to your working directory.
 
 ## Menu
 
