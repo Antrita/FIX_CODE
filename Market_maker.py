@@ -198,7 +198,7 @@ class MarketMaker(fix.Application):
             for md_req_id, symbol in self.subscriptions:
                 self.send_market_data(md_req_id, symbol, self.session_id)
 
-            time.sleep(6)  # Changed to 6 seconds as requested
+            time.sleep(6)
 
     def start(self):
         try:
