@@ -234,5 +234,9 @@ if __name__ == "__main__":
 #ERRORS------------------------------------------------------>
     #Fix handling order cancel request, status
     #enable user i/p in Qty=100 in all menu options [buy, sell]
-    #Stop streaming on unsubscribe
+    #Should Stop streaming on unsubscribe
+    # WHERE'S THE PRICE TAG <44> [PRICE_VALUE] ??-->
+       # "Received admin/Sending Admin: --->
+         # 8=FIX.4.4 | 9=62 | 35=0 | 34=14 | 49=MARKET_MAKER | 52=20241002-04:24:24.000 | 56=CLIENT | 10=069 |
+
 #ERRORS <------------------------------------------------------
