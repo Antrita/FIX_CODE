@@ -129,18 +129,60 @@ class MarketMaker(fix.Application):
             fix.Session.sendToTarget(reject, session_id)
 
     def handle_market_data_request(self, message, session_id):
-        mdReqID = fix.MDReqID()
-        subscriptionRequestType = fix.SubscriptionRequestType()
-        symbol = fix.Symbol()
-        message.getField(mdReqID)
-        message.getField(subscriptionRequestType)
-        message.getField(symbol)
+        try:
+            mdReqID = fix.MDReqID()
+            subscriptionRequestType = fix.SubscriptionRequestType()
+            symbol = fix.Symbol()
+            message.getField(mdReqID)
+            message.getField(subscriptionRequestType)
+            message.getField(symbol)
 
-        if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
-            self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
-            self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
-        elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
-            self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
+            if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
+                self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
+                self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
+            elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
+                self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
+            else:
+                self.send_business_reject(session_id, fix.MsgType_MarketDataRequest,
+                                          "Unsupported SubscriptionRequestType")
+        except fix.FieldNotFound as e:
+            self.send_business_reject(session_id, fix.MsgType_MarketDataRequest, f"Missing required field: {e}")
+
+    def send_market_data(self, md_req_id, symbol, session_id):
+        snapshot = fix44.MarketDataSnapshotFullRefresh()
+        snapshot.setField(fix.MDReqID(md_req_id))
+        snapshot.setField(fix.Symbol(symbol))
+
+        bid_price = self.prices[symbol] - 0.01
+        offer_price = self.prices[symbol] + 0.01
+
+        # Add bid
+        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        group.setField(fix.MDEntryType(fix.MDEntryType_BID))
+        group.setField(fix.MDEntryPx(bid_price))
+        group.setField(fix.MDEntrySize(100000))
+        snapshot.addGroup(group)
+
+        # Add offer
+        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
+        group.setField(fix.MDEntryPx(offer_price))
+        group.setField(fix.MDEntrySize(100000))
+        snapshot.addGroup(group)
+
+        self.format_and_print_message("Sending MarketDataSnapshotFullRefresh", snapshot)
+        fix.Session.sendToTarget(snapshot, session_id)
+
+    def update_prices(self):
+        while True:
+            for symbol in self.symbols:
+                self.prices[symbol] += random.uniform(-0.05, 0.05)
+                self.prices[symbol] = max(4.0, min(self.prices[symbol], 6.0))
+
+            for md_req_id, symbol in self.subscriptions:
+                self.send_market_data(md_req_id, symbol, self.session_id)
+
+            time.sleep(6)
 
     def send_market_data(self, md_req_id, symbol, session_id):
         snapshot = fix44.MarketDataSnapshotFullRefresh()
@@ -169,17 +211,6 @@ class MarketMaker(fix.Application):
 
         fix.Session.sendToTarget(snapshot, session_id)
 
-    def update_prices(self):
-        while True:
-            for symbol in self.symbols:
-                self.prices[symbol] += random.uniform(-0.05, 0.05)
-                self.prices[symbol] = max(4.0, min(self.prices[symbol], 6.0))
-
-            if self.subscriptions:
-                for md_req_id, symbol in self.subscriptions:
-                    self.send_market_data(md_req_id, symbol, self.session_id)
-
-            time.sleep(6)
 
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
