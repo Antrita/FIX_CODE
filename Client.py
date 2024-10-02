@@ -152,11 +152,16 @@ def parse_input(input_string):
     parts = input_string.split()
     action = parts[0]
     tags = {}
-    for i in range(1, len(parts), 2):
-        tag = parts[i][1:]  # Remove the leading '-'
-        value = parts[i + 1]
-        tags[tag] = value
+    if action in ["status", "cancel"]:
+        if len(parts) >= 3:
+            tags[parts[1]] = parts[2]
+    else:
+        for i in range(1, len(parts), 2):
+            tag = parts[i][1:]  # Remove the leading '-'
+            value = parts[i + 1]
+            tags[tag] = value
     return action, tags
+
 
 def main():
     try:
@@ -171,6 +176,9 @@ def main():
         print("FIX Client has started...")
         print("Enter commands in the format: action -tag1 value1 -tag2 value2 ...")
         print("Available actions: buy, sell, subscribe, unsubscribe, cancel, status, quit")
+        print("For status: status 11 [ClOrdID]")
+        print("For cancel order: cancel 41 [OrigClOrdID]")
+        print("To quit, enter 'quit'")
 
         while True:
             user_input = input("[Command]: ")
@@ -185,7 +193,7 @@ def main():
                     symbol = tags.get('55', 'USD/BRL')
                     quantity = tags.get('38')
                     if quantity is None:
-                         quantity = input("Enter quantity: ")
+                        quantity = input("Enter quantity: ")
                     side = fix.Side_BUY if action == "buy" else fix.Side_SELL
                     cl_ord_id = application.place_order(side, symbol, quantity)
                     print(f"{action.capitalize()} order placed. ClOrdID: {cl_ord_id}")
@@ -195,15 +203,21 @@ def main():
                 elif action == "unsubscribe":
                     application.cancel_market_data()
                 elif action == "cancel":
-                    orig_cl_ord_id = tags.get('41', '')
-                    symbol = tags.get('55', 'USD/BRL')
-                    side = fix.Side_BUY if tags.get('54', '1') == '1' else fix.Side_SELL
-                    application.cancel_order(orig_cl_ord_id, symbol, side)
+                    orig_cl_ord_id = tags.get('41')
+                    if orig_cl_ord_id:
+                        symbol = 'USD/BRL'  # Default symbol
+                        side = fix.Side_BUY  # Default side
+                        application.cancel_order(orig_cl_ord_id, symbol, side)
+                    else:
+                        print("Invalid cancel command. Use format: cancel 41 [OrigClOrdID]")
                 elif action == "status":
-                    cl_ord_id = tags.get('11', '')
-                    symbol = tags.get('55', 'USD/BRL')
-                    side = fix.Side_BUY if tags.get('54', '1') == '1' else fix.Side_SELL
-                    application.order_status_request(cl_ord_id, symbol, side)
+                    cl_ord_id = tags.get('11')
+                    if cl_ord_id:
+                        symbol = 'USD/BRL'  # Default symbol
+                        side = fix.Side_BUY  # Default side
+                        application.order_status_request(cl_ord_id, symbol, side)
+                    else:
+                        print("Invalid status command. Use format: status 11 [ClOrdID]")
                 else:
                     print("Invalid action. Please try again.")
             except Exception as e:
@@ -215,7 +229,6 @@ def main():
         print(f"Error starting client: {e}")
         sys.exit()
 
+
 if __name__ == "__main__":
     main()
-    #Fix tag definition: 54,58
-    # Fix handling order cancel request, status
