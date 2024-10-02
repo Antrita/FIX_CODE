@@ -48,7 +48,10 @@ class MarketMaker(fix.Application):
             self.handle_market_data_request(message, session_id)
         elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
             self.handle_order_status_request(message, session_id)
-
+        if msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
+            self.on_market_data(message)
+        elif msgType.getValue() == fix.MsgType_ExecutionReport:
+            self.on_execution_report(message)
     def format_and_print_message(self, prefix, message):
         formatted_message = message.toString().replace(chr(1), ' | ')
         print(f"{prefix}: {formatted_message}")
@@ -139,28 +142,44 @@ class MarketMaker(fix.Application):
         elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
             self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
 
-    def send_market_data(self, md_req_id, symbol, session_id):  #Added tag <44> for prices
+    def send_market_data(self, md_req_id, symbol, session_id):
         snapshot = fix44.MarketDataSnapshotFullRefresh()
         snapshot.setField(fix.MDReqID(md_req_id))
-        snapshot.setField(fix.Symbol(symbol))
+        snapshot.setField(fix.Symbol(symbol))  # Ensure Symbol (55) is always set
 
+        bid_price = self.prices[symbol] - 0.01
+        offer_price = self.prices[symbol] + 0.01
+
+        # Set bid price
         group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
         group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        bid_price = self.prices[symbol] - 0.01
         group.setField(fix.MDEntryPx(bid_price))
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
 
+        # Set offer price
+        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        offer_price = self.prices[symbol] + 0.01
         group.setField(fix.MDEntryPx(offer_price))
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
 
-        # Add the price tag <44>
-        snapshot.setField(fix.Price((bid_price + offer_price) / 2))
+        snapshot.setField(270, str(bid_price))  # Bid price
+        snapshot.setField(271, str(offer_price))  # Ask price
 
         fix.Session.sendToTarget(snapshot, session_id)
+
+    def update_prices(self):
+        while True:
+            for symbol in self.symbols:
+                self.prices[symbol] += random.uniform(-0.05, 0.05)
+                self.prices[symbol] = max(4.0, min(self.prices[symbol], 6.0))
+
+            if self.subscriptions:
+                for md_req_id, symbol in self.subscriptions:
+                    self.send_market_data(md_req_id, symbol, self.session_id)
+
+            time.sleep(6)
 
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
@@ -194,16 +213,24 @@ class MarketMaker(fix.Application):
 
             fix.Session.sendToTarget(reject, session_id)
 
-    def update_prices(self):
-        while True:
-            for symbol in self.symbols:
-                self.prices[symbol] += random.uniform(-0.05, 0.05)
-                self.prices[symbol] = max(4.0, min(self.prices[symbol], 6.0))
 
-            for md_req_id, symbol in self.subscriptions:
-                self.send_market_data(md_req_id, symbol, self.session_id)
+    #Added function to display status.
+    def on_execution_report(self, message):
+        exec_type = fix.ExecType()
+        message.getField(exec_type)
 
-            time.sleep(6)
+        if exec_type.getValue() == fix.ExecType_CANCELED:
+            cl_ord_id = self.get_field_value(message, fix.ClOrdID())
+            print(f"Order cancellation confirmed for ClOrdID: {cl_ord_id}")
+        elif exec_type.getValue() == fix.ExecType_ORDER_STATUS:
+            cl_ord_id = self.get_field_value(message, fix.ClOrdID())
+            ord_status = self.get_field_value(message, fix.OrdStatus())
+            leaves_qty = self.get_field_value(message, fix.LeavesQty())
+            cum_qty = self.get_field_value(message, fix.CumQty())
+            avg_px = self.get_field_value(message, fix.AvgPx())
+
+            print(f"Order Status for ClOrdID: {cl_ord_id}")
+            print(f"Status: {ord_status}, LeavesQty: {leaves_qty}, CumQty: {cum_qty}, AvgPx: {avg_px}")
 
     def start(self):
         try:

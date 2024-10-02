@@ -35,12 +35,66 @@ class Client(fix.Application):
         self.format_and_print_message("Sending app", message)
 
     def fromApp(self, message, session_id):
-        self.format_and_print_message("Received app", message)
-        msgType = fix.MsgType()
-        message.getHeader().getField(msgType)
+        try:
+            msgType = fix.MsgType()
+            message.getHeader().getField(msgType)
 
-        if msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
-            self.on_market_data(message)
+
+            symbol_required_types = [fix.MsgType_ExecutionReport, fix.MsgType_OrderCancelReject,
+                                     fix.MsgType_MarketDataSnapshotFullRefresh]
+            if msgType.getValue() in symbol_required_types:
+                symbol = fix.Symbol()
+                if not message.isSetField(symbol):
+                    print(f"Warning: Symbol (55) missing in incoming {msgType.getValue()} message")
+
+                    message.setField(fix.Symbol(55, "USD/BRL"))
+                else:
+                    message.getField(symbol)
+                    print(f"Received message for Symbol: {symbol.getValue()}")
+
+            self.format_and_print_message("Received app", message)
+
+            if msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
+                self.on_market_data(message)
+            elif msgType.getValue() == fix.MsgType_ExecutionReport:
+                self.on_execution_report(message)
+            # Add handlers for other message types as needed
+
+        # fix.FieldNotFound as e:
+            #print(f"Field not found in message: {e}")
+        except Exception as e:
+            print(f"Error processing incoming message: {e}")
+
+    def format_and_print_message(self, prefix, message):
+        try:
+            formatted_message = message.toString().replace(chr(1), ' | ')
+            print(f"{prefix}: {formatted_message}")
+        except Exception as e:
+            print(f"Error formatting message: {e}")
+
+    def on_execution_report(self, message):
+        try:
+            exec_type = fix.ExecType()
+            message.getField(exec_type)
+
+            cl_ord_id = self.get_field_value(message, fix.ClOrdID())
+            order_id = self.get_field_value(message, fix.OrderID())
+            symbol = self.get_field_value(message, fix.Symbol())
+
+            print(
+                f"Execution Report - ClOrdID: {cl_ord_id}, OrderID: {order_id}, Symbol: {symbol}, ExecType: {exec_type.getValue()}")
+
+            # Handle different execution types
+            if exec_type.getValue() == fix.ExecType_NEW:
+                print("New order acknowledged")
+            elif exec_type.getValue() == fix.ExecType_CANCELED:
+                print("Order canceled")
+            elif exec_type.getValue() == fix.ExecType_REJECTED:
+                print("Order rejected")
+            # Add more execution type handlers as needed
+
+        except Exception as e:
+            print(f"Error processing execution report: {e}")
 
     def format_and_print_message(self, prefix, message):
         formatted_message = message.toString().replace(chr(1), ' | ')
@@ -97,18 +151,23 @@ class Client(fix.Application):
         msg = fix44.MarketDataRequest()
         msg.setField(fix.MDReqID(self.md_req_id))
         msg.setField(fix.SubscriptionRequestType(fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES))
-        msg.setField(fix.MarketDepth(0))
+        msg.setField(fix.MarketDepth(0))  # Full book
+        msg.setField(fix.MDUpdateType(fix.MDUpdateType_FULL_REFRESH))  # Full refresh
 
+        # Specify the types of market data entries we want
         group = fix44.MarketDataRequest().NoMDEntryTypes()
         group.setField(fix.MDEntryType(fix.MDEntryType_BID))
         msg.addGroup(group)
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
         msg.addGroup(group)
 
+        # Specify the symbol
         symbol_group = fix44.MarketDataRequest().NoRelatedSym()
         symbol_group.setField(fix.Symbol(symbol))
         msg.addGroup(symbol_group)
 
+        print(f"Subscribing to market data for symbol: {symbol}")
+        self.format_and_print_message("Sending MarketDataRequest", msg)
         fix.Session.sendToTarget(msg, self.session_id)
 
     def cancel_market_data(self):
@@ -162,7 +221,6 @@ def parse_input(input_string):
             tags[tag] = value
     return action, tags
 
-
 def main():
     try:
         settings = fix.SessionSettings("client.cfg")
@@ -181,12 +239,12 @@ def main():
         print("To quit, enter 'quit'")
 
         while True:
-            user_input = input("[Command]: ")
-
-            if user_input.lower() == 'quit':
-                break
-
             try:
+                user_input = input("[Command]: ")
+
+                if user_input.lower() == 'quit':
+                    break
+
                 action, tags = parse_input(user_input)
 
                 if action == "buy" or action == "sell":
@@ -222,13 +280,18 @@ def main():
                     print("Invalid action. Please try again.")
             except Exception as e:
                 print(f"Error processing command: {e}")
+                # Continue running even if there's an error
 
+        print("Stopping the FIX client...")
         initiator.stop()
+        print("FIX client stopped.")
 
     except (fix.ConfigError, fix.RuntimeError) as e:
-        print(f"Error starting client: {e}")
-        sys.exit()
-
+        print(f"Error in FIX client: {e}")
+    except KeyboardInterrupt:
+        print("FIX client interrupted by user.")
+    finally:
+        print("Exiting FIX client.")
 
 if __name__ == "__main__":
     main()
