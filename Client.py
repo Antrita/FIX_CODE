@@ -158,7 +158,6 @@ def parse_input(input_string):
         tags[tag] = value
     return action, tags
 
-
 def main():
     try:
         settings = fix.SessionSettings("client.cfg")
@@ -182,16 +181,14 @@ def main():
             try:
                 action, tags = parse_input(user_input)
 
-                if action == "buy":
+                if action == "buy" or action == "sell":
                     symbol = tags.get('55', 'USD/BRL')
-                    quantity = tags.get('38', '100')
-                    cl_ord_id = application.place_order(fix.Side_BUY, symbol, quantity)
-                    print(f"Buy order placed. ClOrdID: {cl_ord_id}")
-                elif action == "sell":
-                    symbol = tags.get('55', 'USD/BRL')
-                    quantity = tags.get('38', '100')
-                    cl_ord_id = application.place_order(fix.Side_SELL, symbol, quantity)
-                    print(f"Sell order placed. ClOrdID: {cl_ord_id}")
+                    quantity = tags.get('38')
+                    if quantity is None:
+                         quantity = input("Enter quantity: ")
+                    side = fix.Side_BUY if action == "buy" else fix.Side_SELL
+                    cl_ord_id = application.place_order(side, symbol, quantity)
+                    print(f"{action.capitalize()} order placed. ClOrdID: {cl_ord_id}")
                 elif action == "subscribe":
                     symbol = tags.get('55', 'USD/BRL')
                     application.subscribe_market_data(symbol)
@@ -220,5 +217,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
     #Fix tag definition: 54,58
+    # Fix handling order cancel request, status

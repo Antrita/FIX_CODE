@@ -139,21 +139,26 @@ class MarketMaker(fix.Application):
         elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
             self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
 
-    def send_market_data(self, md_req_id, symbol, session_id):
+    def send_market_data(self, md_req_id, symbol, session_id):  #Added tag <44> for prices
         snapshot = fix44.MarketDataSnapshotFullRefresh()
         snapshot.setField(fix.MDReqID(md_req_id))
         snapshot.setField(fix.Symbol(symbol))
 
         group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
         group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(self.prices[symbol] - 0.01))
+        bid_price = self.prices[symbol] - 0.01
+        group.setField(fix.MDEntryPx(bid_price))
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
 
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(self.prices[symbol] + 0.01))
+        offer_price = self.prices[symbol] + 0.01
+        group.setField(fix.MDEntryPx(offer_price))
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
+
+        # Add the price tag <44>
+        snapshot.setField(fix.Price((bid_price + offer_price) / 2))
 
         fix.Session.sendToTarget(snapshot, session_id)
 
@@ -232,9 +237,6 @@ def main():
 if __name__ == "__main__":
     main()
 #ERRORS------------------------------------------------------>
-    #Fix handling order cancel request, status
-    #enable user i/p in Qty=100 in all menu options [buy, sell]
-    #Should Stop streaming on unsubscribe
     # WHERE'S THE PRICE TAG <44> [PRICE_VALUE] ??-->
        # "Received admin/Sending Admin: --->
          # 8=FIX.4.4 | 9=62 | 35=0 | 34=14 | 49=MARKET_MAKER | 52=20241002-04:24:24.000 | 56=CLIENT | 10=069 |
