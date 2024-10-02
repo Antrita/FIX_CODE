@@ -40,9 +40,10 @@ A simple menu is displayed after the FIX application has started. You can use th
 ## EXAMPLES
 
 ### Users can now enter commands like:
+( For buy/sell, quantitiy is added seperately )
 
-- buy 55 EUR/USD 38 100000
-- sell 55 USD/JPY 38 50000
+- buy 55 EUR/USD 38 
+- sell 55 USD/JPY 38 
 - subscribe 55 GBP/USD
 - cancel 41 123456 -55 EUR/USD 54 1
 - status 11 789012 -55 USD/JPY 54 2
