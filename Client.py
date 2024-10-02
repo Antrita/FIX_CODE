@@ -79,16 +79,18 @@ class Client(fix.Application):
         except fix.FieldNotFound:
             return ''
 
-    def place_order(self, side, symbol="USD/BRL", quantity=100):
+    def place_order(self, side, symbol, quantity):
         order = fix44.NewOrderSingle()
-        order.setField(fix.ClOrdID(gen_order_id()))
+        clOrdID = gen_order_id()
+        order.setField(fix.ClOrdID(clOrdID))
         order.setField(fix.Symbol(symbol))
         order.setField(fix.Side(side))
-        order.setField(fix.OrderQty(quantity))
+        order.setField(fix.OrderQty(float(quantity)))
         order.setField(fix.OrdType(fix.OrdType_MARKET))
         order.setField(fix.TransactTime())
 
         fix.Session.sendToTarget(order, self.session_id)
+        return clOrdID
 
     def subscribe_market_data(self, symbol="USD/BRL"):
         self.md_req_id = gen_order_id()
@@ -123,20 +125,23 @@ class Client(fix.Application):
             fix.Session.sendToTarget(msg, self.session_id)
             self.md_req_id = None
 
-    def cancel_order(self, orig_cl_ord_id, symbol="USD/BRL", side=fix.Side_BUY):
-        msg = fix44.OrderCancelRequest()
-        msg.setField(fix.OrigClOrdID(orig_cl_ord_id))
-        msg.set
+    def cancel_order(self, orig_cl_ord_id, symbol, side):
+        cancel = fix44.OrderCancelRequest()
+        cancel.setField(fix.OrigClOrdID(orig_cl_ord_id))
+        cancel.setField(fix.ClOrdID(gen_order_id()))
+        cancel.setField(fix.Symbol(symbol))
+        cancel.setField(fix.Side(side))
+        cancel.setField(fix.TransactTime())
 
-        fix.Session.sendToTarget(msg, self.session_id)
+        fix.Session.sendToTarget(cancel, self.session_id)
 
-    def order_status_request(self, cl_ord_id, symbol="USD/BRL", side=fix.Side_BUY):
-        msg = fix44.OrderStatusRequest()
-        msg.setField(fix.ClOrdID(cl_ord_id))
-        msg.setField(fix.Symbol(symbol))
-        msg.setField(fix.Side(side))
+    def order_status_request(self, cl_ord_id, symbol, side):
+        status = fix44.OrderStatusRequest()
+        status.setField(fix.ClOrdID(cl_ord_id))
+        status.setField(fix.Symbol(symbol))
+        status.setField(fix.Side(side))
 
-        fix.Session.sendToTarget(msg, self.session_id)
+        fix.Session.sendToTarget(status, self.session_id)
 
 
 
@@ -179,12 +184,14 @@ def main():
 
                 if action == "buy":
                     symbol = tags.get('55', 'USD/BRL')
-                    quantity = int(tags.get('38', '100'))
-                    application.place_order(fix.Side_BUY, symbol, quantity)
+                    quantity = tags.get('38', '100')
+                    cl_ord_id = application.place_order(fix.Side_BUY, symbol, quantity)
+                    print(f"Buy order placed. ClOrdID: {cl_ord_id}")
                 elif action == "sell":
                     symbol = tags.get('55', 'USD/BRL')
-                    quantity = int(tags.get('38', '100'))
-                    application.place_order(fix.Side_SELL, symbol, quantity)
+                    quantity = tags.get('38', '100')
+                    cl_ord_id = application.place_order(fix.Side_SELL, symbol, quantity)
+                    print(f"Sell order placed. ClOrdID: {cl_ord_id}")
                 elif action == "subscribe":
                     symbol = tags.get('55', 'USD/BRL')
                     application.subscribe_market_data(symbol)
@@ -213,3 +220,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    #Fix tag definition: 54,58
