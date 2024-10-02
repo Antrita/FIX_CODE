@@ -41,11 +41,11 @@ A simple menu is displayed after the FIX application has started. You can use th
 
 ### Users can now enter commands like:
 
-- buy -55 EUR/USD -38 100000
-- sell -55 USD/JPY -38 50000
-- subscribe -55 GBP/USD
-- cancel -41 123456 -55 EUR/USD -54 1
-- status -11 789012 -55 USD/JPY -54 2
+- buy 55 EUR/USD -38 100000
+- sell 55 USD/JPY -38 50000
+- subscribe 55 GBP/USD
+- cancel 41 123456 
+- status 11 789012 
 
 Enter the corresponding command or action to perform the desired operation.
 
