@@ -231,3 +231,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+#ERRORS------------------------------------------------------>
+    #Fix handling order cancel request, status
+    #enable user i/p in Qty=100 in all menu options [buy, sell]
+    #Stop streaming on unsubscribe
+#ERRORS <------------------------------------------------------

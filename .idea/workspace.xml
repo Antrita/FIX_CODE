@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Deleted UI">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="updates">
       <change beforePath="$PROJECT_DIR$/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/Client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Market_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/Market_maker.py" afterDir="false" />
     </list>
@@ -272,7 +271,39 @@
       <option name="project" value="LOCAL" />
       <updated>1727796927978</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="Updated readme">
+      <option name="closed" value="true" />
+      <created>1727844016865</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1727844016865</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Handling cancel order, status request">
+      <option name="closed" value="true" />
+      <created>1727844088579</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1727844088579</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Error handling, custom tag definition">
+      <option name="closed" value="true" />
+      <created>1727844129841</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1727844129841</updated>
+    </task>
+    <task id="LOCAL-00027" summary="updates">
+      <option name="closed" value="true" />
+      <created>1727844151577</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1727844151577</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -300,6 +331,10 @@
     <MESSAGE value="Replaced delimiter with &quot; | &quot;" />
     <MESSAGE value="Modification" />
     <MESSAGE value="Deleted UI" />
-    <option name="LAST_COMMIT_MESSAGE" value="Deleted UI" />
+    <MESSAGE value="Updated readme" />
+    <MESSAGE value="Handling cancel order, status request" />
+    <MESSAGE value="Error handling, custom tag definition" />
+    <MESSAGE value="updates" />
+    <option name="LAST_COMMIT_MESSAGE" value="updates" />
   </component>
 </project>
