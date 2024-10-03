@@ -1,4 +1,6 @@
 import sys
+from gettext import textdomain
+
 import quickfix as fix
 import quickfix44 as fix44
 import random
@@ -48,6 +50,7 @@ class Client(fix.Application):
                     print(f"Warning: Symbol (55) missing in incoming {msgType.getValue()} message")
 
                     message.setField(fix.Symbol(55, "USD/BRL"))
+                    message.setField(fix.symbol(58,"Logon"))
                 else:
                     message.getField(symbol)
                     print(f"Received message for Symbol: {symbol.getValue()}")
@@ -67,6 +70,8 @@ class Client(fix.Application):
     def format_and_print_message(self, prefix, message):
         try:
             formatted_message = message.toString().replace(chr(1), ' | ')
+            text_field = 'text'
+            message.setField(58, text_field)
             print(f"{prefix}: {formatted_message}")
         except Exception as e:
             print(f"Error formatting message: {e}")
@@ -149,8 +154,8 @@ class Client(fix.Application):
         msg = fix44.MarketDataRequest()
         msg.setField(fix.MDReqID(self.md_req_id))
         msg.setField(fix.SubscriptionRequestType(fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES))
-        msg.setField(fix.MarketDepth(0))  # Full book
-        msg.setField(fix.MDUpdateType(fix.MDUpdateType_FULL_REFRESH))  # Full refresh
+        msg.setField(fix.MarketDepth(0))
+        msg.setField(fix.MDUpdateType(fix.MDUpdateType_FULL_REFRESH))
 
         # Specify the types of market data entries we want
         group = fix44.MarketDataRequest().NoMDEntryTypes()
@@ -199,10 +204,6 @@ class Client(fix.Application):
         status.setField(fix.Side(side))
 
         fix.Session.sendToTarget(status, self.session_id)
-
-
-
-
 
 
 def parse_input(input_string):
@@ -255,6 +256,7 @@ def main():
                     print(f"{action.capitalize()} order placed. ClOrdID: {cl_ord_id}")
                 elif action == "subscribe":
                     symbol = tags.get('55', 'USD/BRL')
+                    text = tags.get('58', 'subscribed')
                     application.subscribe_market_data(symbol)
                 elif action == "unsubscribe":
                     application.cancel_market_data()
