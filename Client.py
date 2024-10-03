@@ -60,8 +60,7 @@ class Client(fix.Application):
                 self.on_execution_report(message)
             # Add handlers for other message types as needed
 
-        # fix.FieldNotFound as e:
-            #print(f"Field not found in message: {e}")
+
         except Exception as e:
             print(f"Error processing incoming message: {e}")
 
@@ -96,9 +95,6 @@ class Client(fix.Application):
         except Exception as e:
             print(f"Error processing execution report: {e}")
 
-    def format_and_print_message(self, prefix, message):
-        formatted_message = message.toString().replace(chr(1), ' | ')
-        print(f"{prefix}: {formatted_message}")
 
     def on_market_data(self, message):
         symbol = self.get_field_value(message, fix.Symbol())

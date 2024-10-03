@@ -7,6 +7,7 @@ import time
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
+
 def generate_prices():
     mid_price = random.uniform(4.5, 5.5)
     spread = random.uniform(0.02, 0.05)
@@ -22,9 +23,6 @@ class MarketMaker(fix.Application):
         self.prices = {symbol: generate_prices() for symbol in self.symbols}
         self.subscriptions = set()
         self.orders = {}
-
-
-
 
     def onCreate(self, session_id):
         self.session_id = session_id
@@ -58,10 +56,11 @@ class MarketMaker(fix.Application):
             self.handle_market_data_request(message, session_id)
         elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
             self.handle_order_status_request(message, session_id)
-        if msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
+        elif msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
             self.on_market_data(message)
         elif msgType.getValue() == fix.MsgType_ExecutionReport:
             self.on_execution_report(message)
+
     def format_and_print_message(self, prefix, message):
         formatted_message = message.toString().replace(chr(1), ' | ')
         print(f"{prefix}: {formatted_message}")
@@ -103,6 +102,7 @@ class MarketMaker(fix.Application):
 
         fix.Session.sendToTarget(order, session_id)
 
+
     def handle_cancel_request(self, message, session_id):
         origClOrdID = fix.OrigClOrdID()
         message.getField(origClOrdID)
@@ -142,90 +142,90 @@ class MarketMaker(fix.Application):
         try:
             mdReqID = fix.MDReqID()
             subscriptionRequestType = fix.SubscriptionRequestType()
+            marketDepth = fix.MarketDepth()
+            noMDEntryTypes = fix.NoMDEntryTypes()
             symbol = fix.Symbol()
-            message.getField(mdReqID)
-            message.getField(subscriptionRequestType)
-            message.getField(symbol)
+
+            required_fields = [
+                (mdReqID, "MDReqID"),
+                (subscriptionRequestType, "SubscriptionRequestType"),
+                (marketDepth, "MarketDepth"),
+                (noMDEntryTypes, "NoMDEntryTypes"),
+                (symbol, "Symbol")
+            ]
+
+            for field, field_name in required_fields:
+                if not message.isSetField(field.getField()):
+                    raise fix.FieldNotFound(field.getField())
+                message.getField(field)
+
+            print(f"Received Market Data Request - MDReqID: {mdReqID.getValue()}, "
+                  f"SubscriptionRequestType: {subscriptionRequestType.getValue()}, "
+                  f"Symbol: {symbol.getValue()}, "
+                  f"MarketDepth: {marketDepth.getValue()}, "
+                  f"NoMDEntryTypes: {noMDEntryTypes.getValue()}")
 
             if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
                 self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
+                print(f"Added subscription for {symbol.getValue()}")
                 self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
             elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
-                self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
+                if (mdReqID.getValue(), symbol.getValue()) in self.subscriptions:
+                    self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
+                    print(f"Removed subscription for {symbol.getValue()}")
+                else:
+                    print(f"No active subscription found for {symbol.getValue()}")
             else:
-                self.send_business_reject(session_id, fix.MsgType_MarketDataRequest,
-                                          "Unsupported SubscriptionRequestType")
-        except fix.FieldNotFound as e:
-            self.send_business_reject(session_id, fix.MsgType_MarketDataRequest, f"Missing required field: {e}")
+                print(f"Unsupported SubscriptionRequestType: {subscriptionRequestType.getValue()}")
+                self.send_market_data_reject(session_id, mdReqID.getValue(), 1)  # 1 = UNKNOWN_SYMBOL
 
+        except fix.FieldNotFound as e:
+            print(f"Error in handle_market_data_request: Field not found - tag {e.field}")
+            if 'mdReqID' in locals() and mdReqID.getValue():
+                self.send_market_data_reject(session_id, mdReqID.getValue(),
+                                             4)  # 4 = UNSUPPORTED_SUBSCRIPTIONREQUESTTYPE
+            else:
+                print("Unable to send reject message: MDReqID not available")
+        except Exception as e:
+            print(f"Unexpected error in handle_market_data_request: {e}")
+
+    def send_market_data_reject(self, session_id, md_req_id, reject_reason):
+        reject = fix44.MarketDataRequestReject()
+        reject.setField(fix.MDReqID(md_req_id))
+        reject.setField(fix.MDReqRejReason(reject_reason))
+        fix.Session.sendToTarget(reject, session_id)
     def send_market_data(self, md_req_id, symbol, session_id):
         snapshot = fix44.MarketDataSnapshotFullRefresh()
         snapshot.setField(fix.MDReqID(md_req_id))
         snapshot.setField(fix.Symbol(symbol))
 
-        # Update prices
-        self.prices[symbol] = self.generate_prices()
-        bid_price = self.prices[symbol]["bid"]
-        ask_price = self.prices[symbol]["ask"]
+        prices = generate_prices()
+        bid_price = prices["bid"]
+        ask_price = prices["ask"]
 
-        # Add bid
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-        group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(bid_price))
-        group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
+        bid_group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        bid_group.setField(fix.MDEntryType(fix.MDEntryType_BID))
+        bid_group.setField(fix.MDEntryPx(bid_price))
+        bid_group.setField(fix.MDEntrySize(1000000))
+        snapshot.addGroup(bid_group)
 
-        # Add ask
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-        group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(ask_price))
-        group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
+        ask_group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        ask_group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
+        ask_group.setField(fix.MDEntryPx(ask_price))
+        ask_group.setField(fix.MDEntrySize(500000))
+        snapshot.addGroup(ask_group)
 
-        # Add specific bid and ask price tags
-        snapshot.setField(270, str(bid_price))  # Bid price
-        snapshot.setField(271, str(ask_price))  # Ask price
+        snapshot.setField(270, str(bid_price))  # MDEntryPx for bid
+        snapshot.setField(271, str(ask_price))  # MDEntryPx for offer
 
         self.format_and_print_message("Sending MarketDataSnapshotFullRefresh", snapshot)
         fix.Session.sendToTarget(snapshot, session_id)
 
     def update_prices(self):
         while True:
-            for symbol in self.symbols:
-                self.prices[symbol] = generate_prices()
-
             for md_req_id, symbol in self.subscriptions:
                 self.send_market_data(md_req_id, symbol, self.session_id)
-
             time.sleep(6)
-
-    def send_market_data(self, md_req_id, symbol, session_id):
-        snapshot = fix44.MarketDataSnapshotFullRefresh()
-        snapshot.setField(fix.MDReqID(md_req_id))
-        snapshot.setField(fix.Symbol(symbol))  # Ensure Symbol (55) is always set
-
-        bid_price = self.prices[symbol] - 0.01
-        offer_price = self.prices[symbol] + 0.01
-
-        # Set bid price
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-        group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(bid_price))
-        group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
-
-        # Set offer price
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-        group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(offer_price))
-        group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
-
-        snapshot.setField(270, str(bid_price))  # Bid price
-        snapshot.setField(271, str(offer_price))  # Ask price
-
-        fix.Session.sendToTarget(snapshot, session_id)
-
 
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
@@ -259,8 +259,6 @@ class MarketMaker(fix.Application):
 
             fix.Session.sendToTarget(reject, session_id)
 
-
-    #Added function to display status.
     def on_execution_report(self, message):
         exec_type = fix.ExecType()
         message.getField(exec_type)
@@ -287,7 +285,6 @@ class MarketMaker(fix.Application):
 
             acceptor.start()
 
-            # Start the price updating thread
             threading.Thread(target=self.update_prices, daemon=True).start()
 
             print("Market Maker started.")
@@ -295,7 +292,6 @@ class MarketMaker(fix.Application):
                 time.sleep(1)
         except (fix.ConfigError, fix.RuntimeError) as e:
             print(f"Error starting market maker: {e}")
-
 
 def main():
     try:
@@ -305,13 +301,7 @@ def main():
         print("Market Maker stopped.")
     except Exception as e:
         print(f"Error in Market Maker: {e}")
-        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
-#ERRORS------------------------------------------------------>
-    # WHERE'S THE PRICE TAG <44> [PRICE_VALUE] ??-->
-       # "Received admin/Sending Admin: --->
-         # 8=FIX.4.4 | 9=62 | 35=0 | 34=14 | 49=MARKET_MAKER | 52=20241002-04:24:24.000 | 56=CLIENT | 10=069 |
-
-#ERRORS <------------------------------------------------------
