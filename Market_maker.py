@@ -7,25 +7,15 @@ import time
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
-def generate_prices():
-    mid_price = random.uniform(4.5, 5.5)
-    spread = random.uniform(0.02, 0.05)
-    bid = mid_price - spread / 2
-    ask = mid_price + spread / 2
-    return {"bid": round(bid, 4), "ask": round(ask, 4)}
 
 class MarketMaker(fix.Application):
     def __init__(self):
         super().__init__()
         self.session_id = None
         self.symbols = ["USD/BRL"]
-        self.prices = {symbol: generate_prices() for symbol in self.symbols}
+        self.prices = {symbol: random.uniform(4.5, 5.5) for symbol in self.symbols}
         self.subscriptions = set()
         self.orders = {}
-
-
-
-
     def onCreate(self, session_id):
         self.session_id = session_id
         print(f"Session created - {session_id}")
@@ -58,10 +48,7 @@ class MarketMaker(fix.Application):
             self.handle_market_data_request(message, session_id)
         elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
             self.handle_order_status_request(message, session_id)
-        if msgType.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
-            self.on_market_data(message)
-        elif msgType.getValue() == fix.MsgType_ExecutionReport:
-            self.on_execution_report(message)
+
     def format_and_print_message(self, prefix, message):
         formatted_message = message.toString().replace(chr(1), ' | ')
         print(f"{prefix}: {formatted_message}")
@@ -139,93 +126,36 @@ class MarketMaker(fix.Application):
             fix.Session.sendToTarget(reject, session_id)
 
     def handle_market_data_request(self, message, session_id):
-        try:
-            mdReqID = fix.MDReqID()
-            subscriptionRequestType = fix.SubscriptionRequestType()
-            symbol = fix.Symbol()
-            message.getField(mdReqID)
-            message.getField(subscriptionRequestType)
-            message.getField(symbol)
+        mdReqID = fix.MDReqID()
+        subscriptionRequestType = fix.SubscriptionRequestType()
+        symbol = fix.Symbol()
+        message.getField(mdReqID)
+        message.getField(subscriptionRequestType)
+        message.getField(symbol)
 
-            if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
-                self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
-                self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
-            elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
-                self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
-            else:
-                self.send_business_reject(session_id, fix.MsgType_MarketDataRequest,
-                                          "Unsupported SubscriptionRequestType")
-        except fix.FieldNotFound as e:
-            self.send_business_reject(session_id, fix.MsgType_MarketDataRequest, f"Missing required field: {e}")
+        if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
+            self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
+            self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
+        elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
+            self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
 
     def send_market_data(self, md_req_id, symbol, session_id):
         snapshot = fix44.MarketDataSnapshotFullRefresh()
         snapshot.setField(fix.MDReqID(md_req_id))
         snapshot.setField(fix.Symbol(symbol))
 
-        # Update prices
-        self.prices[symbol] = self.generate_prices()
-        bid_price = self.prices[symbol]["bid"]
-        ask_price = self.prices[symbol]["ask"]
-
-        # Add bid
         group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
         group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(bid_price))
+        group.setField(fix.MDEntryPx(self.prices[symbol] - 0.01))
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
 
-        # Add ask
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(ask_price))
+        group.setField(fix.MDEntryPx(self.prices[symbol] + 0.01))
         group.setField(fix.MDEntrySize(100000))
         snapshot.addGroup(group)
-
-        # Add specific bid and ask price tags
-        snapshot.setField(270, str(bid_price))  # Bid price
-        snapshot.setField(271, str(ask_price))  # Ask price
-
-        self.format_and_print_message("Sending MarketDataSnapshotFullRefresh", snapshot)
-        fix.Session.sendToTarget(snapshot, session_id)
-
-    def update_prices(self):
-        while True:
-            for symbol in self.symbols:
-                self.prices[symbol] = generate_prices()
-
-            for md_req_id, symbol in self.subscriptions:
-                self.send_market_data(md_req_id, symbol, self.session_id)
-
-            time.sleep(6)
-
-    def send_market_data(self, md_req_id, symbol, session_id):
-        snapshot = fix44.MarketDataSnapshotFullRefresh()
-        snapshot.setField(fix.MDReqID(md_req_id))
-        snapshot.setField(fix.Symbol(symbol))  # Ensure Symbol (55) is always set
-
-        bid_price = self.prices[symbol] - 0.01
-        offer_price = self.prices[symbol] + 0.01
-
-        # Set bid price
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-        group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(bid_price))
-        group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
-
-        # Set offer price
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-        group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(offer_price))
-        group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
-
-        snapshot.setField(270, str(bid_price))  # Bid price
-        snapshot.setField(271, str(offer_price))  # Ask price
 
         fix.Session.sendToTarget(snapshot, session_id)
-
 
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
@@ -259,24 +189,16 @@ class MarketMaker(fix.Application):
 
             fix.Session.sendToTarget(reject, session_id)
 
+    def update_prices(self):
+        while True:
+            for symbol in self.symbols:
+                self.prices[symbol] += random.uniform(-0.05, 0.05)
+                self.prices[symbol] = max(4.0, min(self.prices[symbol], 6.0))
 
-    #Added function to display status.
-    def on_execution_report(self, message):
-        exec_type = fix.ExecType()
-        message.getField(exec_type)
+            for md_req_id, symbol in self.subscriptions:
+                self.send_market_data(md_req_id, symbol, self.session_id)
 
-        if exec_type.getValue() == fix.ExecType_CANCELED:
-            cl_ord_id = self.get_field_value(message, fix.ClOrdID())
-            print(f"Order cancellation confirmed for ClOrdID: {cl_ord_id}")
-        elif exec_type.getValue() == fix.ExecType_ORDER_STATUS:
-            cl_ord_id = self.get_field_value(message, fix.ClOrdID())
-            ord_status = self.get_field_value(message, fix.OrdStatus())
-            leaves_qty = self.get_field_value(message, fix.LeavesQty())
-            cum_qty = self.get_field_value(message, fix.CumQty())
-            avg_px = self.get_field_value(message, fix.AvgPx())
-
-            print(f"Order Status for ClOrdID: {cl_ord_id}")
-            print(f"Status: {ord_status}, LeavesQty: {leaves_qty}, CumQty: {cum_qty}, AvgPx: {avg_px}")
+            time.sleep(6)  # Changed to 6 seconds as requested
 
     def start(self):
         try:
@@ -295,7 +217,7 @@ class MarketMaker(fix.Application):
                 time.sleep(1)
         except (fix.ConfigError, fix.RuntimeError) as e:
             print(f"Error starting market maker: {e}")
-
+            sys.exit(1)
 
 def main():
     try:
@@ -309,9 +231,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-#ERRORS------------------------------------------------------>
-    # WHERE'S THE PRICE TAG <44> [PRICE_VALUE] ??-->
-       # "Received admin/Sending Admin: --->
-         # 8=FIX.4.4 | 9=62 | 35=0 | 34=14 | 49=MARKET_MAKER | 52=20241002-04:24:24.000 | 56=CLIENT | 10=069 |
-
-#ERRORS <------------------------------------------------------
