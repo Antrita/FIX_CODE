@@ -183,7 +183,7 @@ class MarketMaker(fix.Application):
             print(f"Error in handle_market_data_request: Field not found - tag {e.field}")
             if 'mdReqID' in locals() and mdReqID.getValue():
                 self.send_market_data_reject(session_id, mdReqID.getValue(),
-                                             4)  # 4 = UNSUPPORTED_SUBSCRIPTIONREQUESTTYPE
+                                             4)
             else:
                 print("Unable to send reject message: MDReqID not available")
         except Exception as e:
@@ -240,7 +240,7 @@ class MarketMaker(fix.Application):
             status.setField(fix.OrderID(orderID))
             status.setField(fix.ExecID(gen_order_id()))
             status.setField(fix.ExecType(fix.ExecType_ORDER_STATUS))
-            status.setField(fix.OrdStatus(fix.OrdStatus_NEW))  # Assuming all orders are still NEW
+            status.setField(fix.OrdStatus(fix.OrdStatus_NEW))
             status.setField(clOrdID)
             status.setField(fix.Symbol(order['symbol']))
             status.setField(fix.Side(order['side']))

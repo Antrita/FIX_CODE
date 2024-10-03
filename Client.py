@@ -62,7 +62,7 @@ class Client(fix.Application):
 
 
         except Exception as e:
-            print(f"Error processing incoming message: {e}")
+           print(f"Error processing incoming message: {e}")
 
     def format_and_print_message(self, prefix, message):
         try:
@@ -95,7 +95,6 @@ class Client(fix.Application):
         except Exception as e:
             print(f"Error processing execution report: {e}")
 
-
     def on_market_data(self, message):
         symbol = self.get_field_value(message, fix.Symbol())
         md_req_id = self.get_field_value(message, fix.MDReqID())
@@ -120,7 +119,10 @@ class Client(fix.Application):
                 offer_price = self.get_field_value(group, fix.MDEntryPx())
                 offer_size = self.get_field_value(group, fix.MDEntrySize())
 
-        print(f"Market Data - Symbol: {symbol}, Bid: {bid_price} ({bid_size}), Offer: {offer_price} ({offer_size})")
+        print(f"Market Data - Symbol: {symbol}, MDReqID: {md_req_id}")
+        print(f"Bid: {bid_price} (Size: {bid_size}), Offer: {offer_price} (Size: {offer_size})")
+
+
 
     def get_field_value(self, message, field):
         try:
@@ -259,21 +261,25 @@ def main():
                 elif action == "cancel":
                     orig_cl_ord_id = tags.get('41')
                     if orig_cl_ord_id:
-                        symbol = 'USD/BRL'  # Default symbol
-                        side = fix.Side_BUY  # Default side
+                        symbol = tags.get('55', 'USD/BRL')
+                        side = tags.get('54', fix.Side_BUY)
                         application.cancel_order(orig_cl_ord_id, symbol, side)
                     else:
-                        print("Invalid cancel command. Use format: cancel 41 [OrigClOrdID]")
+                        print("Invalid cancel command. Use format: cancel 41 [OrigClOrdID] 55 [Symbol] 54 [Side]")
                 elif action == "status":
                     cl_ord_id = tags.get('11')
                     if cl_ord_id:
-                        symbol = 'USD/BRL'  # Default symbol
-                        side = fix.Side_BUY  # Default side
+                        symbol = tags.get('55', 'USD/BRL')
+                        side = tags.get('54', fix.Side_BUY)
                         application.order_status_request(cl_ord_id, symbol, side)
                     else:
-                        print("Invalid status command. Use format: status 11 [ClOrdID]")
+                        print("Invalid status command. Use format: status 11 [ClOrdID] 55 [Symbol] 54 [Side]")
                 else:
                     print("Invalid action. Please try again.")
+            except fix.FieldNotFound as e:
+                print(f"Field not found error: {e}")
+            except ValueError as e:
+                print(f"Value error: {e}")
             except Exception as e:
                 print(f"Error processing command: {e}")
                 # Continue running even if there's an error
