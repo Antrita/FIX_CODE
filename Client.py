@@ -58,10 +58,7 @@ class Client(fix.Application):
                 self.on_market_data(message)
             elif msgType.getValue() == fix.MsgType_ExecutionReport:
                 self.on_execution_report(message)
-            # Add handlers for other message types as needed
 
-        # fix.FieldNotFound as e:
-            #print(f"Field not found in message: {e}")
         except Exception as e:
             print(f"Error processing incoming message: {e}")
 
@@ -97,35 +94,47 @@ class Client(fix.Application):
             print(f"Error processing execution report: {e}")
 
     def format_and_print_message(self, prefix, message):
-        formatted_message = message.toString().replace(chr(1), ' | ')
-        print(f"{prefix}: {formatted_message}")
+        try:
+            formatted_message = message.toString().replace(chr(1), ' | ')
+            print(f"{prefix}: {formatted_message}")
+        except Exception as e:
+            print(f"Error formatting message: {e}")
+            print(f"{prefix}: {message}")
+
 
     def on_market_data(self, message):
-        symbol = self.get_field_value(message, fix.Symbol())
-        md_req_id = self.get_field_value(message, fix.MDReqID())
+        try:
+            symbol = self.get_field_value(message, fix.Symbol())
+            md_req_id = self.get_field_value(message, fix.MDReqID())
 
-        bid_price = offer_price = "N/A"
-        bid_size = offer_size = "N/A"
+            if not symbol or not md_req_id:
+                print("Warning: Symbol or MDReqID missing in market data message")
+                return
 
-        no_md_entries = fix.NoMDEntries()
-        message.getField(no_md_entries)
+            bid_price = offer_price = "N/A"
+            bid_size = offer_size = "N/A"
 
-        for i in range(no_md_entries.getValue()):
-            group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
-            message.getGroup(i + 1, group)
+            no_md_entries = fix.NoMDEntries()
+            message.getField(no_md_entries)
 
-            entry_type = fix.MDEntryType()
-            group.getField(entry_type)
+            for i in range(no_md_entries.getValue()):
+                group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+                message.getGroup(i + 1, group)
 
-            if entry_type.getValue() == fix.MDEntryType_BID:
-                bid_price = self.get_field_value(group, fix.MDEntryPx())
-                bid_size = self.get_field_value(group, fix.MDEntrySize())
-            elif entry_type.getValue() == fix.MDEntryType_OFFER:
-                offer_price = self.get_field_value(group, fix.MDEntryPx())
-                offer_size = self.get_field_value(group, fix.MDEntrySize())
+                entry_type = fix.MDEntryType()
+                group.getField(entry_type)
 
-        print(f"Market Data - Symbol: {symbol}, Bid: {bid_price} ({bid_size}), Offer: {offer_price} ({offer_size})")
+                if entry_type.getValue() == fix.MDEntryType_BID:
+                    bid_price = self.get_field_value(group, fix.MDEntryPx())
+                    bid_size = self.get_field_value(group, fix.MDEntrySize())
+                elif entry_type.getValue() == fix.MDEntryType_OFFER:
+                    offer_price = self.get_field_value(group, fix.MDEntryPx())
+                    offer_size = self.get_field_value(group, fix.MDEntrySize())
 
+            print(
+                f"Market Data - Symbol: {symbol}, MDReqID: {md_req_id}, Bid: {bid_price} ({bid_size}), Offer: {offer_price} ({offer_size})")
+        except Exception as e:
+            print(f"Error processing market data: {e}")
     def get_field_value(self, message, field):
         try:
             message.getField(field)
@@ -201,11 +210,6 @@ class Client(fix.Application):
         status.setField(fix.Side(side))
 
         fix.Session.sendToTarget(status, self.session_id)
-
-
-
-
-
 
 def parse_input(input_string):
     parts = input_string.split()

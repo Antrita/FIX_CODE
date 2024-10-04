@@ -4,11 +4,21 @@ import quickfix44 as fix44
 import random
 import threading
 import time
+from datetime import datetime
+
+class CustomApplication:
+    def format_and_print_message(self, prefix, message):
+        try:
+            formatted_message = message.toString().replace(chr(1), ' | ')
+            print(f"{prefix}: {formatted_message}")
+        except Exception as e:
+            print(f"Error formatting message: {e}")
+            print(f"{prefix}: {message}")
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
 
-class MarketMaker(fix.Application):
+class MarketMaker(fix.Application, CustomApplication):
     def __init__(self):
         super().__init__()
         self.session_id = None
@@ -16,6 +26,7 @@ class MarketMaker(fix.Application):
         self.prices = {symbol: random.uniform(4.5, 5.5) for symbol in self.symbols}
         self.subscriptions = set()
         self.orders = {}
+
     def onCreate(self, session_id):
         self.session_id = session_id
         print(f"Session created - {session_id}")
@@ -36,22 +47,32 @@ class MarketMaker(fix.Application):
         self.format_and_print_message("Sending app", message)
 
     def fromApp(self, message, session_id):
-        self.format_and_print_message("Received app", message)
-        msgType = fix.MsgType()
-        message.getHeader().getField(msgType)
+        try:
+            msgType = fix.MsgType()
+            message.getHeader().getField(msgType)
 
-        if msgType.getValue() == fix.MsgType_NewOrderSingle:
-            self.handle_new_order(message, session_id)
-        elif msgType.getValue() == fix.MsgType_OrderCancelRequest:
-            self.handle_cancel_request(message, session_id)
-        elif msgType.getValue() == fix.MsgType_MarketDataRequest:
-            self.handle_market_data_request(message, session_id)
-        elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
-            self.handle_order_status_request(message, session_id)
+            # raw message
+            self.format_and_print_message("Received raw app message", message)
 
-    def format_and_print_message(self, prefix, message):
-        formatted_message = message.toString().replace(chr(1), ' | ')
-        print(f"{prefix}: {formatted_message}")
+            # Handle different message types
+            if msgType.getValue() == fix.MsgType_NewOrderSingle:
+                self.handle_new_order(message, session_id)
+            elif msgType.getValue() == fix.MsgType_OrderCancelRequest:
+                self.handle_cancel_request(message, session_id)
+            elif msgType.getValue() == fix.MsgType_MarketDataRequest:
+                self.handle_market_data_request(message, session_id)
+            elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
+                self.handle_order_status_request(message, session_id)
+            else:
+                print(f"Unhandled message type: {msgType.getValue()}")
+
+            # Log the processed message
+            self.format_and_print_message("Processed app message", message)
+
+        except fix.FieldNotFound as e:
+            print(f"Error processing message: Field not found - {e}")
+        except Exception as e:
+            print(f"Error processing message: {e}")
 
     def handle_new_order(self, message, session_id):
         order = fix44.ExecutionReport()
@@ -140,23 +161,39 @@ class MarketMaker(fix.Application):
             self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
 
     def send_market_data(self, md_req_id, symbol, session_id):
-        snapshot = fix44.MarketDataSnapshotFullRefresh()
-        snapshot.setField(fix.MDReqID(md_req_id))
-        snapshot.setField(fix.Symbol(symbol))
+        message = fix.Message()
+        header = message.getHeader()
 
+        header.setField(fix.BeginString("FIX.4.4"))
+        header.setField(fix.MsgType("W"))  # Market Data Snapshot Full Refresh
+        header.setField(fix.SenderCompID("MARKETMAKER"))
+        header.setField(fix.TargetCompID("CLIENT"))
+
+        message.setField(fix.MDReqID(md_req_id))
+        message.setField(fix.Symbol(symbol))
+
+        bid_price = self.prices[symbol] - 0.01
+        ask_price = self.prices[symbol] + 0.01
+
+        # Add NoMDEntries group
         group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+
+        # Add bid
         group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(self.prices[symbol] - 0.01))
+        group.setField(fix.MDEntryPx(bid_price))
         group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
+        message.addGroup(group)
 
+        # Add offer
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(self.prices[symbol] + 0.01))
+        group.setField(fix.MDEntryPx(ask_price))
         group.setField(fix.MDEntrySize(100000))
-        snapshot.addGroup(group)
+        message.addGroup(group)
 
-        fix.Session.sendToTarget(snapshot, session_id)
+        # Set sending time
+        header.setField(fix.SendingTime(datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3]))
 
+        fix.Session.sendToTarget(message, session_id)
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
         message.getField(clOrdID)
