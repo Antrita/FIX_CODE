@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Modified market subscription functionality">
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="set reconnect interval to 60 seconds">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Market_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/Market_maker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -434,7 +433,31 @@
       <option name="project" value="LOCAL" />
       <updated>1728395974282</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="Modified market subscription functionality">
+      <option name="closed" value="true" />
+      <created>1728398606100</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1728398606100</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Added heartbeat logging">
+      <option name="closed" value="true" />
+      <created>1728404999552</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1728404999552</updated>
+    </task>
+    <task id="LOCAL-00046" summary="set reconnect interval to 60 seconds">
+      <option name="closed" value="true" />
+      <created>1728405034677</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1728405034677</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -469,6 +492,19 @@
     <MESSAGE value="Modification" />
     <MESSAGE value="Modifications" />
     <MESSAGE value="Modified market subscription functionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="Modified market subscription functionality" />
+    <MESSAGE value="Added heartbeat logging" />
+    <MESSAGE value="set reconnect interval to 60 seconds" />
+    <option name="LAST_COMMIT_MESSAGE" value="set reconnect interval to 60 seconds" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Market_maker.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
