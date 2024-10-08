@@ -14,21 +14,40 @@ class Client(fix.Application):
         super().__init__()
         self.session_id = None
         self.md_req_id = None
+        self.last_heartbeat_time = None #8/10/24 : set heartbt time
 
     def onCreate(self, session_id):
         self.session_id = session_id
         print(f"Session created - {session_id}")
 
     def onLogon(self, session_id):
+        self.session_id = session_id
         print(f"Logon - {session_id}")
+        print("Client logged on and ready to send requests.")
 
     def onLogout(self, session_id):
         print(f"Logout - {session_id}")
 
     def toAdmin(self, message, session_id):
+        msgType = fix.MsgType()
+        message.getHeader().getField(msgType)
+
+        if msgType.getValue() == fix.MsgType_Heartbeat:
+            print("Sending Heartbeat")
+
         self.format_and_print_message("Sending admin", message)
 
     def fromAdmin(self, message, session_id):
+        msgType = fix.MsgType()
+        message.getHeader().getField(msgType)
+
+        if msgType.getValue() == fix.MsgType_Heartbeat:
+            current_time = datetime.now()
+            if self.last_heartbeat_time:
+                interval = (current_time - self.last_heartbeat_time).total_seconds()
+                print(f"Heartbeat received. Interval: {interval:.2f} seconds")
+            self.last_heartbeat_time = current_time
+
         self.format_and_print_message("Received admin", message)
 
     def toApp(self, message, session_id):

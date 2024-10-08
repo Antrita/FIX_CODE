@@ -20,27 +20,45 @@ def gen_order_id():
 
 class MarketMaker(fix.Application, CustomApplication):
     def __init__(self):
-        super().__init__()
-        self.session_id = None
-        self.symbols = ["USD/BRL"]
-        self.prices = {symbol: random.uniform(4.5, 5.5) for symbol in self.symbols}
-        self.subscriptions = set()
-        self.orders = {}
+            super().__init__()
+            self.session_id = None
+            self.symbols = ["USD/BRL"]
+            self.prices = {symbol: random.uniform(4.5, 5.5) for symbol in self.symbols}
+            self.subscriptions = set()
+            self.orders = {}
+            self.last_heartbeat_time = None #init heartbeat time
 
     def onCreate(self, session_id):
         self.session_id = session_id
         print(f"Session created - {session_id}")
 
     def onLogon(self, session_id):
+        self.session_id = session_id
         print(f"Logon - {session_id}")
+        print("Market Maker logged on and ready to receive requests.")
 
     def onLogout(self, session_id):
         print(f"Logout - {session_id}")
 
     def toAdmin(self, message, session_id):
-        self.format_and_print_message("Sending admin", message)
+        msgType = fix.MsgType()
+        message.getHeader().getField(msgType)
 
+        if msgType.getValue() == fix.MsgType_Heartbeat:
+            print("Sending Heartbeat")
+
+        self.format_and_print_message("Sending admin", message)
     def fromAdmin(self, message, session_id):
+        msgType = fix.MsgType()
+        message.getHeader().getField(msgType)
+
+        if msgType.getValue() == fix.MsgType_Heartbeat:
+            current_time = datetime.now()
+            if self.last_heartbeat_time:
+                interval = (current_time - self.last_heartbeat_time).total_seconds()
+                print(f"Heartbeat received. Interval: {interval:.2f} seconds")
+            self.last_heartbeat_time = current_time
+
         self.format_and_print_message("Received admin", message)
 
     def toApp(self, message, session_id):
@@ -185,29 +203,34 @@ class MarketMaker(fix.Application, CustomApplication):
 
     def handle_market_data_request(self, message, session_id):
         try:
-            # Extract MDReqID if set
+            # Extract MDReqID
             mdReqID = fix.MDReqID()
-            if message.isSetField(mdReqID):
-                message.getField(mdReqID)
-            else:
-                print("MDReqID not found in the message")
-                return
+            message.getField(mdReqID)
 
-            # Extract SubscriptionRequestType if set
+            # Extract SubscriptionRequestType
             subscriptionRequestType = fix.SubscriptionRequestType()
-            if message.isSetField(subscriptionRequestType):
-                message.getField(subscriptionRequestType)
-            else:
-                print("SubscriptionRequestType not found in the message")
-                return
+            message.getField(subscriptionRequestType)
 
-            # Extract Symbol if set
-            symbol = fix.Symbol(55, "USD/BRL")
-            if message.isSetField(symbol):
-                message.getField(symbol)
+            # Extract Symbol
+            symbol = fix.Symbol()
+            message.getField(symbol)
+
+            # Check for NoMDEntryTypes field
+            noMDEntryTypes = fix.NoMDEntryTypes()
+            if message.isSetField(noMDEntryTypes):
+                message.getField(noMDEntryTypes)
+                entryTypes = []
+                for i in range(noMDEntryTypes.getValue()):
+                    group = fix44.MarketDataRequest().NoMDEntryTypes()
+                    message.getGroup(i + 1, group)
+                    mdEntryType = fix.MDEntryType()
+                    group.getField(mdEntryType)
+                    entryTypes.append(mdEntryType.getValue())
+
+                if fix.MDEntryType_BID not in entryTypes or fix.MDEntryType_OFFER not in entryTypes:
+                    print("Warning: Bid or Offer entry type not found in the request")
             else:
-                print("Symbol not found in the message")
-                return
+                print("Warning: NoMDEntryTypes field not found in the request")
 
             if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
                 self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
@@ -218,7 +241,7 @@ class MarketMaker(fix.Application, CustomApplication):
             print(f"Processed Market Data Request for {symbol.getValue()} with MDReqID: {mdReqID.getValue()}")
 
         except fix.FieldNotFound as e:
-            print(f"Warning: Field not found in message - {e}")
+            print(f"Field not found in message: {e}")
         except Exception as e:
             print(f"Error processing Market Data Request: {e}")
     '''def handle_market_data_request(self, message, session_id):
@@ -302,24 +325,36 @@ class MarketMaker(fix.Application, CustomApplication):
         header.setField(fix.SenderCompID("MARKET_MAKER"))
         header.setField(fix.TargetCompID("CLIENT"))
 
+        # Set sending time
+        header.setField(fix.SendingTime(datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3]))
+
         message.setField(fix.Symbol(symbol))
         message.setField(fix.MDReqID(md_req_id))
 
         bid_price = round(self.prices[symbol] - 0.01, 4)
         ask_price = round(self.prices[symbol] + 0.01, 4)
 
+        # NoMDEntries
+        noMDEntries = fix.NoMDEntries(2)
+        message.setField(noMDEntries)
+
         # Add bid
-        message.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        message.setField(fix.MDEntryPx(bid_price))
-        message.setField(fix.MDEntrySize(100000))
+        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        group.setField(fix.MDEntryType(fix.MDEntryType_BID))
+        group.setField(fix.MDEntryPx(bid_price))
+        group.setField(fix.MDEntrySize(100000))
+        group.setField(fix.MDEntryDate(datetime.utcnow().strftime("%Y%m%d")))
+        group.setField(fix.MDEntryTime(datetime.utcnow().strftime("%H:%M:%S")))
+        message.addGroup(group)
 
         # Add offer
-        message.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        message.setField(fix.MDEntryPx(ask_price))
-        message.setField(fix.MDEntrySize(100000))
-
-        # Set sending time
-        header.setField(fix.SendingTime(datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3]))
+        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
+        group.setField(fix.MDEntryPx(ask_price))
+        group.setField(fix.MDEntrySize(100000))
+        group.setField(fix.MDEntryDate(datetime.utcnow().strftime("%Y%m%d")))
+        group.setField(fix.MDEntryTime(datetime.utcnow().strftime("%H:%M:%S")))
+        message.addGroup(group)
 
         fix.Session.sendToTarget(message, session_id)
     def handle_order_status_request(self, message, session_id):
