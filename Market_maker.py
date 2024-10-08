@@ -46,13 +46,17 @@ class MarketMaker(fix.Application, CustomApplication):
     def toApp(self, message, session_id):
         self.format_and_print_message("Sending app", message)
 
-    def fromApp(self, message, session_id):
+    '''def fromApp(self, message, session_id):
         try:
-            msgType = fix.MsgType()
-            message.getHeader().getField(msgType)
-
-            # raw message
+            # Log the raw message first
             self.format_and_print_message("Received raw app message", message)
+
+            msgType = fix.MsgType()
+            if message.getHeader().isSetField(msgType):
+                message.getHeader().getField(msgType)
+            else:
+                print("Message type not found in the message")
+                return
 
             # Handle different message types
             if msgType.getValue() == fix.MsgType_NewOrderSingle:
@@ -70,7 +74,40 @@ class MarketMaker(fix.Application, CustomApplication):
             self.format_and_print_message("Processed app message", message)
 
         except fix.FieldNotFound as e:
-            print(f"Error processing message: Field not found - {e}")
+            print(f"Warning: Field not found in message - {e}")
+        except Exception as e:
+            print(f"Error processing message: {e}")'''
+
+    def fromApp(self, message, session_id):
+        try:
+            # Log the raw message first
+            self.format_and_print_message("Received raw app message", message)
+
+            msgType = fix.MsgType()
+            if message.getHeader().isSetField(msgType):
+                message.getHeader().getField(msgType)
+            else:
+                print("Message type not found in the message")
+                return
+
+            # Handle different message types
+            if msgType.getValue() == fix.MsgType_NewOrderSingle:
+                self.handle_new_order(message, session_id)
+            elif msgType.getValue() == fix.MsgType_OrderCancelRequest:
+                self.handle_cancel_request(message, session_id)
+            elif msgType.getValue() == fix.MsgType_MarketDataRequest:
+                self.handle_market_data_request(message, session_id)
+            elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
+                self.handle_order_status_request(message, session_id)
+            else:
+                print(f"Unhandled message type: {msgType.getValue()}")
+
+            # Log the processed message
+            #self.format_and_print_message("Processed app message", message)
+
+        except fix.FieldNotFound as e:
+            print(f"Warning: Field not found in message - {e}")
+            print(f"Message content: {message}")
         except Exception as e:
             print(f"Error processing message: {e}")
 
@@ -147,18 +184,115 @@ class MarketMaker(fix.Application, CustomApplication):
             fix.Session.sendToTarget(reject, session_id)
 
     def handle_market_data_request(self, message, session_id):
-        mdReqID = fix.MDReqID()
-        subscriptionRequestType = fix.SubscriptionRequestType()
-        symbol = fix.Symbol()
-        message.getField(mdReqID)
-        message.getField(subscriptionRequestType)
-        message.getField(symbol)
+        try:
+            # Extract MDReqID if set
+            mdReqID = fix.MDReqID()
+            if message.isSetField(mdReqID):
+                message.getField(mdReqID)
+            else:
+                print("MDReqID not found in the message")
+                return
 
-        if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
-            self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
-            self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
-        elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
-            self.subscriptions.remove((mdReqID.getValue(), symbol.getValue()))
+            # Extract SubscriptionRequestType if set
+            subscriptionRequestType = fix.SubscriptionRequestType()
+            if message.isSetField(subscriptionRequestType):
+                message.getField(subscriptionRequestType)
+            else:
+                print("SubscriptionRequestType not found in the message")
+                return
+
+            # Extract Symbol if set
+            symbol = fix.Symbol()
+            if message.isSetField(symbol):
+                message.getField(symbol)
+            else:
+                print("Symbol not found in the message")
+                return
+
+            if subscriptionRequestType.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
+                self.subscriptions.add((mdReqID.getValue(), symbol.getValue()))
+                self.send_market_data(mdReqID.getValue(), symbol.getValue(), session_id)
+            elif subscriptionRequestType.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
+                self.subscriptions.discard((mdReqID.getValue(), symbol.getValue()))
+
+            print(f"Processed Market Data Request for {symbol.getValue()} with MDReqID: {mdReqID.getValue()}")
+
+        except fix.FieldNotFound as e:
+            print(f"Warning: Field not found in message - {e}")
+        except Exception as e:
+            print(f"Error processing Market Data Request: {e}")
+
+    '''def handle_market_data_request(self, message, session_id):
+        try:
+            # Extract MDReqID, Symbol, and SubscriptionRequestType from the incoming message
+            mdReqID = fix.MDReqID()
+            subscriptionRequestType = fix.SubscriptionRequestType()
+            symbol = fix.Symbol()
+
+            # Ensure the required fields are in the message
+            message.getField(mdReqID)
+            message.getField(subscriptionRequestType)
+            message.getField(symbol)
+
+            # Print out the received market data request
+            print(f"Received Market Data Request for MDReqID: {mdReqID.getValue()}, Symbol: {symbol.getValue()}")
+
+            # Fetch market data (prices) based on the symbol from the on_market_data method
+            bid_price, offer_price = self.on_market_data(message)
+
+            # Construct the market data message to send back to the client
+            if bid_price != "N/A" and offer_price != "N/A":
+                # Construct the FIX message in the required format
+                message_out = fix.Message()
+                header = message_out.getHeader()
+
+                # Set the basic FIX fields in the header
+                header.setField(fix.BeginString("FIX.4.4"))
+                header.setField(fix.MsgType("W"))  # Market Data Snapshot Full Refresh
+                header.setField(fix.SenderCompID("MARKET_MAKER"))
+                header.setField(fix.TargetCompID("CLIENT"))
+                header.setField(fix.MsgSeqNum(1))  # Sequence number (can be adjusted)
+                header.setField(fix.SendingTime("20241008-13:19:00.000"))  # Adjust as needed
+
+                # Set MDReqID and Symbol
+                message_out.setField(fix.MDReqID(mdReqID.getValue()))
+                message_out.setField(fix.Symbol(symbol.getValue()))
+
+                # Create the market data entries for Bid and Offer
+                message_out.setField(fix.MDEntryType(fix.MDEntryType_BID))  # Entry type: BID
+                message_out.setField(fix.MDEntryPx(bid_price))  # Bid Price
+                message_out.setField(fix.MDEntrySize(100))  # Arbitrary size (adjust as needed)
+
+                message_out.setField(fix.MDEntryType(fix.MDEntryType_OFFER))  # Entry type: OFFER
+                message_out.setField(fix.MDEntryPx(offer_price))  # Offer Price
+                message_out.setField(fix.MDEntrySize(100))  # Arbitrary size (adjust as needed)
+
+                # Additional fields as per your format
+                message_out.setField(fix.MDEntryDate("20241008"))  # Date for the entries
+                message_out.setField(fix.MDEntryTime("13:19:00"))  # Time of the entries
+
+                # Hardcoded values for the other fields, adjust as needed
+                message_out.setField(fix.MDEntrySize(100))
+                message_out.setField(fix.MDEntryDate("20241008"))
+                message_out.setField(fix.MDEntryTime("13:19:00"))
+                message_out.setField(fix.MDEntrySize(100))
+                message_out.setField(fix.MDEntryDate("20241008"))
+                message_out.setField(fix.MDEntryTime("13:19:00"))
+
+                # Calculate and add the CheckSum (you may want to recalculate checksum in production)
+                message_out.setField(fix.CheckSum(str(fix.CalculateChecksum(message_out))))
+
+                # Send the constructed message to the client
+                fix.Session.sendToTarget(message_out, session_id)
+                print(f"Sent Market Data Response: {message_out}")
+
+            else:
+                print("Error: Market data not found or invalid prices.")
+
+        except fix.FieldNotFound as e:
+            print(f"Warning: Field not found in message - {e}")
+        except Exception as e:
+            print(f"Error processing market data request: {e}")'''
 
     def send_market_data(self, md_req_id, symbol, session_id):
         message = fix.Message()
@@ -226,6 +360,10 @@ class MarketMaker(fix.Application, CustomApplication):
 
             fix.Session.sendToTarget(reject, session_id)
 
+
+
+        # Send the message
+        self.send_to_client(message, session_id)
     def update_prices(self):
         while True:
             for symbol in self.symbols:
