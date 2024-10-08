@@ -202,7 +202,7 @@ class MarketMaker(fix.Application, CustomApplication):
                 return
 
             # Extract Symbol if set
-            symbol = fix.Symbol()
+            symbol = fix.Symbol(55, "USD/BRL")
             if message.isSetField(symbol):
                 message.getField(symbol)
             else:
@@ -221,7 +221,6 @@ class MarketMaker(fix.Application, CustomApplication):
             print(f"Warning: Field not found in message - {e}")
         except Exception as e:
             print(f"Error processing Market Data Request: {e}")
-
     '''def handle_market_data_request(self, message, session_id):
         try:
             # Extract MDReqID, Symbol, and SubscriptionRequestType from the incoming message
@@ -300,29 +299,24 @@ class MarketMaker(fix.Application, CustomApplication):
 
         header.setField(fix.BeginString("FIX.4.4"))
         header.setField(fix.MsgType("W"))  # Market Data Snapshot Full Refresh
-        header.setField(fix.SenderCompID("MARKETMAKER"))
+        header.setField(fix.SenderCompID("MARKET_MAKER"))
         header.setField(fix.TargetCompID("CLIENT"))
 
-        message.setField(fix.MDReqID(md_req_id))
         message.setField(fix.Symbol(symbol))
+        message.setField(fix.MDReqID(md_req_id))
 
-        bid_price = self.prices[symbol] - 0.01
-        ask_price = self.prices[symbol] + 0.01
-
-        # Add NoMDEntries group
-        group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+        bid_price = round(self.prices[symbol] - 0.01, 4)
+        ask_price = round(self.prices[symbol] + 0.01, 4)
 
         # Add bid
-        group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(bid_price))
-        group.setField(fix.MDEntrySize(100000))
-        message.addGroup(group)
+        message.setField(fix.MDEntryType(fix.MDEntryType_BID))
+        message.setField(fix.MDEntryPx(bid_price))
+        message.setField(fix.MDEntrySize(100000))
 
         # Add offer
-        group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(ask_price))
-        group.setField(fix.MDEntrySize(100000))
-        message.addGroup(group)
+        message.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
+        message.setField(fix.MDEntryPx(ask_price))
+        message.setField(fix.MDEntrySize(100000))
 
         # Set sending time
         header.setField(fix.SendingTime(datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3]))
