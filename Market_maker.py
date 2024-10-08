@@ -64,38 +64,6 @@ class MarketMaker(fix.Application, CustomApplication):
     def toApp(self, message, session_id):
         self.format_and_print_message("Sending app", message)
 
-    '''def fromApp(self, message, session_id):
-        try:
-            # Log the raw message first
-            self.format_and_print_message("Received raw app message", message)
-
-            msgType = fix.MsgType()
-            if message.getHeader().isSetField(msgType):
-                message.getHeader().getField(msgType)
-            else:
-                print("Message type not found in the message")
-                return
-
-            # Handle different message types
-            if msgType.getValue() == fix.MsgType_NewOrderSingle:
-                self.handle_new_order(message, session_id)
-            elif msgType.getValue() == fix.MsgType_OrderCancelRequest:
-                self.handle_cancel_request(message, session_id)
-            elif msgType.getValue() == fix.MsgType_MarketDataRequest:
-                self.handle_market_data_request(message, session_id)
-            elif msgType.getValue() == fix.MsgType_OrderStatusRequest:
-                self.handle_order_status_request(message, session_id)
-            else:
-                print(f"Unhandled message type: {msgType.getValue()}")
-
-            # Log the processed message
-            self.format_and_print_message("Processed app message", message)
-
-        except fix.FieldNotFound as e:
-            print(f"Warning: Field not found in message - {e}")
-        except Exception as e:
-            print(f"Error processing message: {e}")'''
-
     def fromApp(self, message, session_id):
         try:
             # Log the raw message first

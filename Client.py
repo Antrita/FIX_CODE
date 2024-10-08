@@ -302,8 +302,8 @@ def main():
                 else:
                     print("Invalid action. Please try again.")
             except Exception as e:
-                print(f"Error processing command: {e}")
-                # Continue running even if there's an error
+                print(f" ")
+
 
         print("Stopping the FIX client...")
         initiator.stop()
