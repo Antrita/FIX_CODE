@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Modifications" />
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="modifications" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +29,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Alter_1" />
+        <entry key="$PROJECT_DIR$" value="Alter" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -66,7 +66,7 @@
     &quot;Python.FIX_UI.executor&quot;: &quot;Run&quot;,
     &quot;Python.Market_maker.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Alter&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Price__update&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/Fix_UI&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
   }
@@ -407,7 +407,63 @@
       <option name="project" value="LOCAL" />
       <updated>1727967554549</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="Modifications">
+      <option name="closed" value="true" />
+      <created>1727968456567</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1727968456567</updated>
+    </task>
+    <task id="LOCAL-00042" summary="Modified market subscription functionality">
+      <option name="closed" value="true" />
+      <created>1728055862243</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1728055862243</updated>
+    </task>
+    <task id="LOCAL-00043" summary="Modified market subscription functionality">
+      <option name="closed" value="true" />
+      <created>1728395974282</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1728395974282</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Modified market subscription functionality">
+      <option name="closed" value="true" />
+      <created>1728398606100</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1728398606100</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Added heartbeat logging">
+      <option name="closed" value="true" />
+      <created>1728404999552</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1728404999552</updated>
+    </task>
+    <task id="LOCAL-00046" summary="set reconnect interval to 60 seconds">
+      <option name="closed" value="true" />
+      <created>1728405034677</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1728405034677</updated>
+    </task>
+    <task id="LOCAL-00047" summary="modifications">
+      <option name="closed" value="true" />
+      <created>1728405566504</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1728405566504</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -441,6 +497,21 @@
     <MESSAGE value="Added comments as reminders for modification." />
     <MESSAGE value="Modification" />
     <MESSAGE value="Modifications" />
-    <option name="LAST_COMMIT_MESSAGE" value="Modifications" />
+    <MESSAGE value="Modified market subscription functionality" />
+    <MESSAGE value="Added heartbeat logging" />
+    <MESSAGE value="set reconnect interval to 60 seconds" />
+    <MESSAGE value="modifications" />
+    <option name="LAST_COMMIT_MESSAGE" value="modifications" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Market_maker.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
