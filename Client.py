@@ -14,7 +14,7 @@ class Client(fix.Application):
         super().__init__()
         self.session_id = None
         self.md_req_id = None
-        self.last_heartbeat_time = None #8/10/24 : set heartbt time
+        self.last_heartbeat_time = None #set heartbt time
 
     def onCreate(self, session_id):
         self.session_id = session_id
@@ -79,7 +79,7 @@ class Client(fix.Application):
                 self.on_execution_report(message)
 
         except Exception as e:
-            print(f"Error processing incoming message: {e}")
+            print(f" ")
 
     def format_and_print_message(self, prefix, message):
         try:
@@ -120,40 +120,35 @@ class Client(fix.Application):
             print(f"Error formatting message: {e}")
             print(f"{prefix}: {message}")
 
-
     def on_market_data(self, message):
         try:
-            symbol = self.get_field_value(message, fix.Symbol())
-            md_req_id = self.get_field_value(message, fix.MDReqID())
-
-            if not symbol or not md_req_id:
-                print("Warning: Symbol or MDReqID missing in market data message")
-                return
-
-            bid_price = offer_price = "N/A"
-            bid_size = offer_size = "N/A"
+            symbol = "USD/BRL"  # Directly set the symbol
+            md_req_id = fix.MDReqID()
+            message.getField(md_req_id)
 
             no_md_entries = fix.NoMDEntries()
             message.getField(no_md_entries)
+
+            print(f"Received market data for {symbol}, MDReqID: {md_req_id.getValue()}")
 
             for i in range(no_md_entries.getValue()):
                 group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
                 message.getGroup(i + 1, group)
 
                 entry_type = fix.MDEntryType()
+                price = fix.MDEntryPx()
+                size = fix.MDEntrySize()
+
                 group.getField(entry_type)
+                group.getField(price)
+                group.getField(size)
 
-                if entry_type.getValue() == fix.MDEntryType_BID:
-                    bid_price = self.get_field_value(group, fix.MDEntryPx())
-                    bid_size = self.get_field_value(group, fix.MDEntrySize())
-                elif entry_type.getValue() == fix.MDEntryType_OFFER:
-                    offer_price = self.get_field_value(group, fix.MDEntryPx())
-                    offer_size = self.get_field_value(group, fix.MDEntrySize())
+                print(f"  {entry_type.getValue()}: Price={price.getValue()}, "
+                      f"Size={size.getValue()}")
 
-            print(
-                f"Market Data - Symbol: {symbol}, MDReqID: {md_req_id}, Bid: {bid_price} ({bid_size}), Offer: {offer_price} ({offer_size})")
-        except Exception as e:
+        except fix.FieldNotFound as e:
             print(f"Error processing market data: {e}")
+
     def get_field_value(self, message, field):
         try:
             message.getField(field)
@@ -176,27 +171,57 @@ class Client(fix.Application):
 
     def subscribe_market_data(self, symbol="USD/BRL"):
         self.md_req_id = gen_order_id()
-        msg = fix44.MarketDataRequest()
-        msg.setField(fix.MDReqID(self.md_req_id))
-        msg.setField(fix.SubscriptionRequestType(fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES))
-        msg.setField(fix.MarketDepth(0))  # Full book
-        msg.setField(fix.MDUpdateType(fix.MDUpdateType_FULL_REFRESH))  # Full refresh
+        request = fix44.MarketDataRequest()
+        request.setField(fix.MDReqID(self.md_req_id))
+        request.setField(fix.SubscriptionRequestType(fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES))
+        request.setField(fix.MarketDepth(0))
+        request.setField(fix.MDUpdateType(fix.MDUpdateType_FULL_REFRESH))
 
-        # Specify the types of market data entries we want
         group = fix44.MarketDataRequest().NoMDEntryTypes()
         group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        msg.addGroup(group)
+        request.addGroup(group)
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        msg.addGroup(group)
+        request.addGroup(group)
 
-        # Specify the symbol
         symbol_group = fix44.MarketDataRequest().NoRelatedSym()
         symbol_group.setField(fix.Symbol(symbol))
-        msg.addGroup(symbol_group)
+        request.addGroup(symbol_group)
 
         print(f"Subscribing to market data for symbol: {symbol}")
-        self.format_and_print_message("Sending MarketDataRequest", msg)
-        fix.Session.sendToTarget(msg, self.session_id)
+        self.format_and_print_message("Sending MarketDataRequest", request)
+        fix.Session.sendToTarget(request, self.session_id)
+
+    def on_market_data(self, message):
+
+            symbol = fix.Symbol()
+            md_req_id = fix.MDReqID()
+            message.getField(symbol)
+            message.getField(md_req_id)
+
+            no_md_entries = fix.NoMDEntries()
+            message.getField(no_md_entries)
+
+            print(f"Received market data for {symbol.getValue()}, MDReqID: {md_req_id.getValue()}")
+
+            for i in range(no_md_entries.getValue()):
+                group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
+                message.getGroup(i + 1, group)
+
+                entry_type = fix.MDEntryType()
+                price = fix.MDEntryPx()
+                size = fix.MDEntrySize()
+                date = fix.MDEntryDate()
+                time = fix.MDEntryTime()
+
+                group.getField(entry_type)
+                group.getField(price)
+                group.getField(size)
+                group.getField(date)
+                group.getField(time)
+
+                print(f"  {entry_type.getValue()}: Price={price.getValue()}, "
+                      f"Size={size.getValue()}, Date={date.getValue()}, Time={time.getValue()}")
+
 
     def cancel_market_data(self):
         if self.md_req_id:
