@@ -28,7 +28,7 @@ class MarketMaker(fix.Application, CustomApplication):
         self.orders = {}
         self.last_heartbeat_time = None
         self.is_running = True
-
+        self.is_paused = False
     def onCreate(self, session_id):
         self.session_id = session_id
         print(f"Session created - {session_id}")
@@ -178,9 +178,11 @@ class MarketMaker(fix.Application, CustomApplication):
                 self.subscriptions.add((md_req_id.getValue(), self.symbol_value))
                 print(f"Added subscription for {self.symbol_value} with MDReqID {md_req_id.getValue()}")
                 self.send_market_data(md_req_id.getValue(), session_id, self.symbol_value)
+                self.is_paused = False  # Unpause when subscribing
             elif subscription_type.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
                 self.subscriptions = {sub for sub in self.subscriptions if sub[1] != self.symbol_value}
                 print(f"Removed subscription for {self.symbol_value}")
+                self.is_paused = True  # Pause when unsubscribing
             else:
                 print(f"Unsupported subscription type: {subscription_type.getValue()}")
 
@@ -210,6 +212,7 @@ class MarketMaker(fix.Application, CustomApplication):
 
         fix.Session.sendToTarget(snapshot, session_id)
         print(f"Sent market data for {symbol}: Bid={self.prices[symbol] - 0.01}, Offer={self.prices[symbol] + 0.01}")
+        time.sleep(10)
 
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
@@ -244,23 +247,25 @@ class MarketMaker(fix.Application, CustomApplication):
     def update_prices(self):
         while self.is_running:
             try:
-                self.prices[self.symbol_value] += random.uniform(-0.05, 0.05)
-                self.prices[self.symbol_value] = max(4.0, min(self.prices[self.symbol_value], 6.0))
+                if not self.is_paused:  # Only update and send data if not paused
+                    self.prices[self.symbol_value] += random.uniform(-0.05, 0.05)
+                    self.prices[self.symbol_value] = max(4.0, min(self.prices[self.symbol_value], 6.0))
 
-                for md_req_id, symbol in list(self.subscriptions):
-                    if symbol == self.symbol_value and self.session_id:
-                        try:
-                            self.send_market_data(md_req_id, self.session_id, self.symbol_value)
-                        except fix.SessionNotFound:
-                            print(f"Session {self.session_id} not found. Removing subscription for {self.symbol_value}")
-                            self.subscriptions.remove((md_req_id, self.symbol_value))
-                        except Exception as e:
-                            print(f"Error sending market data for {self.symbol_value}: {e}")
+                    for md_req_id, symbol in list(self.subscriptions):
+                        if symbol == self.symbol_value and self.session_id:
+                            try:
+                                self.send_market_data(md_req_id, self.session_id, self.symbol_value)
+                            except fix.SessionNotFound:
+                                print(
+                                    f"Session {self.session_id} not found. Removing subscription for {self.symbol_value}")
+                                self.subscriptions.remove((md_req_id, self.symbol_value))
+                            except Exception as e:
+                                print(f"Error sending market data for {self.symbol_value}: {e}")
 
-                time.sleep(10)
+                time.sleep(6)
             except Exception as e:
                 print(f"Error in update_prices: {e}")
-                time.sleep(6)
+                time.sleep(1)
 
     def start(self):
         try:
@@ -275,7 +280,7 @@ class MarketMaker(fix.Application, CustomApplication):
 
             print("Market Maker started.")
             while self.is_running:
-                time.sleep(1)
+                time.sleep(10)
         except (fix.ConfigError, fix.RuntimeError) as e:
             print(f"Error starting market maker: {e}")
             sys.exit(1)
