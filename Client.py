@@ -191,9 +191,16 @@ class Client(fix.Application):
 
         try:
             fix.Session.sendToTarget(new_order, self.session_id)
-            print(f"Order sent: ClOrdID={cl_ord_id}, Symbol={order_details['symbol']}, "
-                  f"Side={'Buy' if order_details['side'] == fix.Side_BUY else 'Sell'}, "
-                  f"Quantity={order_details['quantity']}, OrderType={order_details['orderType']}")
+            print(f"Order Acknowledgement:")
+            print(f"ClOrdID: {cl_ord_id}")
+            print(f"Symbol: {order_details['symbol']}")
+            print(f"Side: {'Buy' if order_details['side'] == fix.Side_BUY else 'Sell'}")
+            print(f"Quantity: {order_details['quantity']}")
+            print(f"OrderType: {order_details['orderType']}")
+            if order_details['price']:
+                print(f"Price: {order_details['price']}")
+            if order_details['stopPrice']:
+                print(f"Stop Price: {order_details['stopPrice']}")
             return cl_ord_id
         except fix.RuntimeError as e:
             print(f"Error sending order: {e}")
