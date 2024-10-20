@@ -16,7 +16,7 @@ class CustomApplication:
             print(f"{prefix}: {message}")
 
 def gen_order_id():
-    return str(random.randint(100000, 999999))
+    return str(random.randint(1000, 9999))
 
 class MarketMaker(fix.Application, CustomApplication):
     def __init__(self):
@@ -95,14 +95,20 @@ class MarketMaker(fix.Application, CustomApplication):
             print(f"Error processing message: {e}")
 
     def handle_new_order(self, message, session_id):
+        # Display the received order message in pure FIX format
+        print("Received order in FIX format:")
+        self.format_and_print_message("New Order", message)
+
         order = fix44.ExecutionReport()
         clOrdID = fix.ClOrdID()
         side = fix.Side()
         orderQty = fix.OrderQty()
+        ordType = fix.OrdType()
 
         message.getField(clOrdID)
         message.getField(side)
         message.getField(orderQty)
+        message.getField(ordType)
 
         orderID = gen_order_id()
         self.orders[orderID] = {
@@ -110,10 +116,25 @@ class MarketMaker(fix.Application, CustomApplication):
             'symbol': self.symbol_value,
             'side': side.getValue(),
             'orderQty': orderQty.getValue(),
+            'ordType': ordType.getValue(),
             'leavesQty': orderQty.getValue(),
             'cumQty': 0,
             'avgPx': 0
         }
+
+        # Handle different order types
+        if ordType.getValue() == fix.OrdType_LIMIT:
+            price = fix.Price()
+            message.getField(price)
+            self.orders[orderID]['price'] = price.getValue()
+        elif ordType.getValue() in [fix.OrdType_STOP, fix.OrdType_STOP_LIMIT]:
+            stopPx = fix.StopPx()
+            message.getField(stopPx)
+            self.orders[orderID]['stopPx'] = stopPx.getValue()
+            if ordType.getValue() == fix.OrdType_STOP_LIMIT:
+                price = fix.Price()
+                message.getField(price)
+                self.orders[orderID]['price'] = price.getValue()
 
         order.setField(fix.OrderID(orderID))
         order.setField(fix.ExecID(gen_order_id()))
@@ -123,11 +144,22 @@ class MarketMaker(fix.Application, CustomApplication):
         order.setField(fix.Symbol(self.symbol_value))
         order.setField(side)
         order.setField(orderQty)
+        order.setField(ordType)
         order.setField(fix.LeavesQty(orderQty.getValue()))
         order.setField(fix.CumQty(0))
         order.setField(fix.AvgPx(0))
 
+        # Add fields specific to order types
+        if 'price' in self.orders[orderID]:
+            order.setField(fix.Price(self.orders[orderID]['price']))
+        if 'stopPx' in self.orders[orderID]:
+            order.setField(fix.StopPx(self.orders[orderID]['stopPx']))
+
         fix.Session.sendToTarget(order, session_id)
+        print(f"New order received and processed: OrderID={orderID}, ClOrdID={clOrdID.getValue()}, "
+              f"Symbol={self.symbol_value}, Side={'Buy' if side.getValue() == fix.Side_BUY else 'Sell'}, "
+              f"Quantity={orderQty.getValue()}, OrderType={ordType.getValue()}")
+
 
     def handle_cancel_request(self, message, session_id):
         origClOrdID = fix.OrigClOrdID()
@@ -180,14 +212,19 @@ class MarketMaker(fix.Application, CustomApplication):
                 self.send_market_data(md_req_id.getValue(), session_id, self.symbol_value)
                 self.is_paused = False  # Unpause when subscribing
             elif subscription_type.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
-                self.subscriptions = {sub for sub in self.subscriptions if sub[1] != self.symbol_value}
-                print(f"Removed subscription for {self.symbol_value}")
-                self.is_paused = True  # Pause when unsubscribing
+                self.handle_unsubscription(md_req_id.getValue(), self.symbol_value)
             else:
                 print(f"Unsupported subscription type: {subscription_type.getValue()}")
 
         except fix.FieldNotFound as e:
             print(f"Error processing market data request: {e}")
+
+    def handle_unsubscription(self, md_req_id, symbol):
+        self.subscriptions = {sub for sub in self.subscriptions if sub[0] != md_req_id}
+        print(f"Removed subscription for {symbol} with MDReqID {md_req_id}")
+        if not self.subscriptions:
+            self.is_paused = True
+        print("Current subscriptions:", self.subscriptions)
 
     def send_market_data(self, md_req_id, session_id, symbol):
         if symbol not in self.prices:

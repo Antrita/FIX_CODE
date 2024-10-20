@@ -1,9 +1,15 @@
+'''Users can now place orders using commands like:
+
+buy USD/BRL 100 (Market order)
+sell USD/BRL 100 limit (Limit order)
+buy USD/BRL 100 stop  (Stop order)
+sell USD/BRL 100 stop_limit 1.10  (Stop-limit order)'''
+
 import sys
 import quickfix as fix
 import quickfix44 as fix44
 import random
 from datetime import datetime
-
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
@@ -81,12 +87,12 @@ class Client(fix.Application):
         except Exception as e:
             print(f" ")
 
-    def format_and_print_message(self, prefix, message):
+    '''def format_and_print_message(self, prefix, message):
         try:
             formatted_message = message.toString().replace(chr(1), ' | ')
             print(f"{prefix}: {formatted_message}")
         except Exception as e:
-            print(f"Error formatting message: {e}")
+            print(f"Error formatting message: {e}" '''
 
     def on_execution_report(self, message):
         try:
@@ -122,7 +128,7 @@ class Client(fix.Application):
 
     def on_market_data(self, message):
         try:
-            symbol = "USD/BRL"  # Directly set the symbol
+            symbol = "USD/BRL"
             md_req_id = fix.MDReqID()
             message.getField(md_req_id)
 
@@ -156,19 +162,49 @@ class Client(fix.Application):
         except fix.FieldNotFound:
             return ''
 
-    def place_order(self, side, symbol, quantity):
-        order = fix44.NewOrderSingle()
-        clOrdID = gen_order_id()
-        order.setField(fix.ClOrdID(clOrdID))
-        order.setField(fix.Symbol(symbol))
-        order.setField(fix.Side(side))
-        order.setField(fix.OrderQty(float(quantity)))
-        order.setField(fix.OrdType(fix.OrdType_MARKET))
-        order.setField(fix.TransactTime())
+    def place_order(self, side, symbol, quantity, order_type, price=None, stop_price=None):
+        order_details = {
+            'symbol': symbol,
+            'side': side,
+            'quantity': quantity,
+            'orderType': order_type,
+            'price': price,
+            'stopPrice': stop_price
+        }
+        return self.send_order(order_details)
 
-        fix.Session.sendToTarget(order, self.session_id)
-        return clOrdID
+    def send_order(self, order_details):
+        new_order = fix44.NewOrderSingle()
+        cl_ord_id = gen_order_id()
+        new_order.setField(fix.ClOrdID(cl_ord_id))
+        new_order.setField(fix.Symbol(order_details['symbol']))
+        new_order.setField(fix.Side(order_details['side']))
+        new_order.setField(fix.OrderQty(float(order_details['quantity'])))
+        new_order.setField(fix.OrdType(order_details['orderType']))
+        new_order.setField(fix.TransactTime())
 
+        if order_details['orderType'] != fix.OrdType_MARKET:
+            new_order.setField(fix.Price(float(order_details['price'])))
+
+        if order_details['orderType'] in [fix.OrdType_STOP, fix.OrdType_STOP_LIMIT]:
+            new_order.setField(fix.StopPx(float(order_details['stopPrice'])))
+
+        try:
+            fix.Session.sendToTarget(new_order, self.session_id)
+            print(f"Order Acknowledgement:")
+            print(f"ClOrdID: {cl_ord_id}")
+            print(f"Symbol: {order_details['symbol']}")
+            print(f"Side: {'Buy' if order_details['side'] == fix.Side_BUY else 'Sell'}")
+            print(f"Quantity: {order_details['quantity']}")
+            print(f"OrderType: {order_details['orderType']}")
+            if order_details['price']:
+                print(f"Price: {order_details['price']}")
+            if order_details['stopPrice']:
+                print(f"Stop Price: {order_details['stopPrice']}")
+            return cl_ord_id
+        except fix.RuntimeError as e:
+            print(f"Error sending order: {e}")
+            return None
     def subscribe_market_data(self, symbol="USD/BRL"):
         self.md_req_id = gen_order_id()
         request = fix44.MarketDataRequest()
@@ -280,11 +316,17 @@ def main():
         initiator.start()
 
         print("FIX Client has started...")
-        print("Enter commands in the format: action -tag1 value1 -tag2 value2 ...")
-        print("Available actions: buy, sell, subscribe, unsubscribe, cancel, status, quit")
-        print("For status: status 11 [ClOrdID]")
-        print("For cancel order: cancel 41 [OrigClOrdID]")
-        print("To quit, enter 'quit'")
+        print("Enter commands in the following format:")
+        print("  buy/sell symbol quantity [order_type] [price] [stop_price]")
+        print("Order types: market (default), limit, stop, stop_limit")
+        print("Examples:")
+        print("  buy USD/BRL 100")
+        print("  sell USD/BRL 100 limit ")
+        print("  buy USD/BRL 100 stop")
+        print("  sell USD/BRL 100 stop_limit [stop price; ex-1.15]")
+        print("Other commands: subscribe, unsubscribe, cancel, status, quit")
+        print("For status: status [ClOrdID]")
+        print("For cancel order: cancel [OrigClOrdID]")
 
         while True:
             try:
@@ -293,37 +335,64 @@ def main():
                 if user_input.lower() == 'quit':
                     break
 
-                action, tags = parse_input(user_input)
+                parts = user_input.split()
+                action = parts[0].lower()
 
-                if action == "buy" or action == "sell":
-                    symbol = tags.get('55', 'USD/BRL')
-                    quantity = tags.get('38')
-                    if quantity is None:
-                        quantity = input("Enter quantity: ")
+                if action in ["buy", "sell"]:
+                    if len(parts) < 3:
+                        print(
+                            "Invalid order command. Use format: buy/sell symbol quantity [order_type] [price] [stop_price]")
+                        continue
+
+                    symbol = parts[1]
+                    quantity = parts[2]
+                    order_type = fix.OrdType_MARKET
+                    price = None
+                    stop_price = None
+
+                    if len(parts) > 3:
+                        order_type_str = parts[3].lower()
+                        if order_type_str == "limit":
+                            order_type = fix.OrdType_LIMIT
+                            price = parts[4] if len(parts) > 4 else input("Enter limit price: ")
+                        elif order_type_str == "stop":
+                            order_type = fix.OrdType_STOP
+                            stop_price = parts[4] if len(parts) > 4 else input("Enter stop price: ")
+                        elif order_type_str == "stop_limit":
+                            order_type = fix.OrdType_STOP_LIMIT
+                            stop_price = parts[4] if len(parts) > 4 else input("Enter stop price: ")
+                            price = parts[5] if len(parts) > 5 else input("Enter limit price: ")
+                        elif order_type_str != "market":
+                            print("Invalid order type. Using market order.")
+
                     side = fix.Side_BUY if action == "buy" else fix.Side_SELL
-                    cl_ord_id = application.place_order(side, symbol, quantity)
-                    print(f"{action.capitalize()} order placed. ClOrdID: {cl_ord_id}")
+
+                    cl_ord_id = application.place_order(side, symbol, quantity, order_type, price, stop_price)
+                    if cl_ord_id:
+                        print(f"{action.capitalize()} order placed. ClOrdID: {cl_ord_id}")
+                    else:
+                        print("Failed to place order.")
                 elif action == "subscribe":
-                    symbol = tags.get('55', 'USD/BRL')
+                    symbol = parts[1] if len(parts) > 1 else 'USD/BRL'
                     application.subscribe_market_data(symbol)
                 elif action == "unsubscribe":
                     application.cancel_market_data()
                 elif action == "cancel":
-                    orig_cl_ord_id = tags.get('41')
-                    if orig_cl_ord_id:
+                    if len(parts) < 2:
+                        print("Invalid cancel command. Use format: cancel [OrigClOrdID]")
+                    else:
+                        orig_cl_ord_id = parts[1]
                         symbol = 'USD/BRL'  # Default symbol
                         side = fix.Side_BUY  # Default side
                         application.cancel_order(orig_cl_ord_id, symbol, side)
-                    else:
-                        print("Invalid cancel command. Use format: cancel 41 [OrigClOrdID]")
                 elif action == "status":
-                    cl_ord_id = tags.get('11')
-                    if cl_ord_id:
-                        symbol = 'USD/BRL'  # Default symbol
-                        side = fix.Side_BUY  # Default side
-                        application.order_status_request(cl_ord_id, symbol, side)
+                    if len(parts) < 2:
+                        print("Invalid status command. Use format: status [ClOrdID]")
                     else:
-                        print("Invalid status command. Use format: status 11 [ClOrdID]")
+                        cl_ord_id = parts[1]
+                        symbol = 'USD/BRL'
+                        side = fix.Side_BUY
+                        application.order_status_request(cl_ord_id, symbol, side)
                 else:
                     print("Invalid action. Please try again.")
             except Exception as e:
