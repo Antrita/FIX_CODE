@@ -291,6 +291,55 @@ class Client(fix.Application):
 
         fix.Session.sendToTarget(status, self.session_id)
 
+    def process_command(self, command: str):
+        """Process commands received from the UI"""
+        try:
+            parts = command.split()
+            action = parts[0].lower()
+
+            if action in ["buy", "sell"]:
+                if len(parts) >= 3:
+                    symbol = parts[1]
+                    quantity = parts[2]
+                    order_type = fix.OrdType_MARKET
+                    price = None
+                    stop_price = None
+
+                    if len(parts) > 3:
+                        order_type_str = parts[3].lower()
+                        if order_type_str == "limit":
+                            order_type = fix.OrdType_LIMIT
+                            price = parts[4] if len(parts) > 4 else None
+                        elif order_type_str == "stop":
+                            order_type = fix.OrdType_STOP
+                            stop_price = parts[4] if len(parts) > 4 else None
+                        elif order_type_str == "stop_limit":
+                            order_type = fix.OrdType_STOP_LIMIT
+                            stop_price = parts[4] if len(parts) > 4 else None
+                            price = parts[5] if len(parts) > 5 else None
+
+                    side = fix.Side_BUY if action == "buy" else fix.Side_SELL
+                    self.place_order(side, symbol, quantity, order_type, price, stop_price)
+
+            elif action == "subscribe":
+                symbol = parts[1] if len(parts) > 1 else 'USD/BRL'
+                self.subscribe_market_data(symbol)
+            elif action == "unsubscribe":
+                self.cancel_market_data()
+            elif action == "cancel":
+                if len(parts) >= 2:
+                    orig_cl_ord_id = parts[1]
+                    symbol = 'USD/BRL'
+                    side = fix.Side_BUY
+                    self.cancel_order(orig_cl_ord_id, symbol, side)
+            elif action == "status":
+                if len(parts) >= 2:
+                    cl_ord_id = parts[1]
+                    symbol = 'USD/BRL'
+                    side = fix.Side_BUY
+                    self.order_status_request(cl_ord_id, symbol, side)
+        except Exception as e:
+            print(f"Error processing command: {e}")
 def parse_input(input_string):
     parts = input_string.split()
     action = parts[0]

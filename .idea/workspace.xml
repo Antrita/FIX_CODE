@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Subscription functionality fixed.">
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="modifications">
+      <change afterPath="$PROJECT_DIR$/fastapi_app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/Client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Market_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/Market_maker.py" afterDir="false" />
@@ -33,7 +37,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Modif" />
+        <entry key="$PROJECT_DIR$" value="Modif1" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -69,12 +73,19 @@
     "Python.Client.executor": "Run",
     "Python.FIX_UI.executor": "Run",
     "Python.Market_maker.executor": "Run",
+    "Python.fastapi_app.executor": "Run",
+    "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Modif1",
+    "git-widget-placeholder": "CARD__UI",
     "last_opened_file_path": "D:/Fix_UI",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\FIX_CODE\static" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="Market_maker" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="FIX_CODE" />
@@ -102,6 +113,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.Market_maker" />
+        <item itemvalue="Python.Market_maker" />
       </list>
     </recent_temporary>
   </component>
@@ -120,14 +132,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00002" summary="commit">
-      <option name="closed" value="true" />
-      <created>1725872053462</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1725872053462</updated>
     </task>
     <task id="LOCAL-00003" summary="commit">
       <option name="closed" value="true" />
@@ -513,7 +517,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729273999812</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="modifications">
+      <option name="closed" value="true" />
+      <created>1729442926286</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1729442926286</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -550,8 +562,9 @@
     <MESSAGE value="Modified market subscription functionality" />
     <MESSAGE value="Added heartbeat logging" />
     <MESSAGE value="set reconnect interval to 60 seconds" />
-    <MESSAGE value="modifications" />
     <MESSAGE value="Subscription functionality fixed." />
-    <option name="LAST_COMMIT_MESSAGE" value="Subscription functionality fixed." />
+    <MESSAGE value="Added 4 types of market order." />
+    <MESSAGE value="modifications" />
+    <option name="LAST_COMMIT_MESSAGE" value="modifications" />
   </component>
 </project>
