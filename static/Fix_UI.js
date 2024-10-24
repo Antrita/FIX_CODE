@@ -119,13 +119,82 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
     function updateOrderHistory(order) {
-        const div = document.createElement('div');
-        div.className = 'mb-2 text-sm';
-        div.textContent = order;
-        orderHistoryDiv.appendChild(div);
-        orderHistoryDiv.scrollTop = orderHistoryDiv.scrollHeight;
+    // Create table if it doesn't exist
+    if (!orderHistoryDiv.querySelector('table')) {
+        const table = document.createElement('table');
+        table.className = 'w-full';
+        table.innerHTML = `
+            <colgroup>
+                <col class="w-24">
+                <col>
+            </colgroup>
+        `;
+        orderHistoryDiv.appendChild(table);
     }
 
+    const table = orderHistoryDiv.querySelector('table');
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-800';
+
+    // Add time column
+    const timeCell = document.createElement('td');
+    timeCell.className = 'text-gray-500 text-sm pr-4 align-top';
+    timeCell.textContent = new Date().toLocaleTimeString();
+
+    // Add message column with hover effect
+    const messageCell = document.createElement('td');
+    messageCell.className = 'text-sm relative group';
+    messageCell.innerHTML = `
+        <div class="truncate">${order}</div>
+        <div class="hidden group-hover:block absolute left-0 top-0 bg-gray-700 p-2 rounded shadow-lg z-10 whitespace-pre-wrap">
+            ${order}
+        </div>
+    `;
+
+    row.appendChild(timeCell);
+    row.appendChild(messageCell);
+    table.appendChild(row);
+    orderHistoryDiv.scrollTop = orderHistoryDiv.scrollHeight;
+}
+
+function updateMakerOutput(message) {
+    // Create table if it doesn't exist
+    if (!makerOutputDiv.querySelector('table')) {
+        const table = document.createElement('table');
+        table.className = 'w-full';
+        table.innerHTML = `
+            <colgroup>
+                <col class="w-24">
+                <col>
+            </colgroup>
+        `;
+        makerOutputDiv.appendChild(table);
+    }
+
+    const table = makerOutputDiv.querySelector('table');
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-800';
+
+    // Add time column
+    const timeCell = document.createElement('td');
+    timeCell.className = 'text-gray-500 text-sm pr-4 align-top';
+    timeCell.textContent = new Date().toLocaleTimeString();
+
+    // Add message column with hover effect
+    const messageCell = document.createElement('td');
+    messageCell.className = 'text-sm relative group';
+    messageCell.innerHTML = `
+        <div class="truncate">${message}</div>
+        <div class="hidden group-hover:block absolute left-0 top-0 bg-gray-700 p-2 rounded shadow-lg z-10 whitespace-pre-wrap">
+            ${message}
+        </div>
+    `;
+
+    row.appendChild(timeCell);
+    row.appendChild(messageCell);
+    table.appendChild(row);
+    makerOutputDiv.scrollTop = makerOutputDiv.scrollHeight;
+}
     function updateMakerOutput(message) {
         const div = document.createElement('div');
         div.className = 'whitespace-pre-wrap mb-1';
