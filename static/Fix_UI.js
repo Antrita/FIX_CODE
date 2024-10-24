@@ -38,19 +38,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
 
                     <div class="p-4 bg-gray-800 text-white rounded-lg">
-                        <h2 class="text-xl font-bold mb-4">Market Data</h2>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-gray-700 p-3 rounded">
-                                <div class="text-green-400">Bid</div>
-                                <div id="bid-price" class="text-2xl">---</div>
-                            </div>
-                            <div class="bg-gray-700 p-3 rounded">
-                                <div class="text-red-400">Ask</div>
-                                <div id="ask-price" class="text-2xl">---</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <h2 class="text-xl font-bold mb-4">Market Data</h2>
+    <div id="market-data" class="bg-gray-900 p-2 rounded h-48 overflow-y-auto font-mono text-xs">
+    </div>
+</div>
 
                 <!-- Market Maker Section -->
                 <div class="p-4 bg-gray-800 text-white rounded-lg">
@@ -68,8 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const commandInput = document.getElementById('command-input');
     const orderHistoryDiv = document.getElementById('order-history');
     const makerOutputDiv = document.getElementById('maker-output');
-    const bidPrice = document.getElementById('bid-price');
-    const askPrice = document.getElementById('ask-price');
+    const marketDataDiv = document.getElementById('market-data');
 
     // WebSocket connection
     const ws = new WebSocket(`ws://${window.location.host}/ws`);
@@ -119,16 +109,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update functions
     function updateMarketData(data) {
-        if (data) {
-            // Parse FIX message for bid/ask prices
-            const message = data.toString();
-            const bidMatch = message.match(/270=1.*?271=([\d.]+)/);
-            const askMatch = message.match(/270=2.*?271=([\d.]+)/);
-
-            if (bidMatch) bidPrice.textContent = bidMatch[1];
-            if (askMatch) askPrice.textContent = askMatch[1];
-        }
+    if (data) {
+        const div = document.createElement('div');
+        div.className = 'whitespace-pre mb-1 text-gray-300';
+        div.textContent = data;
+        marketDataDiv.appendChild(div);
+        marketDataDiv.scrollTop = marketDataDiv.scrollHeight;
     }
+}
 
     function updateOrderHistory(order) {
         const div = document.createElement('div');

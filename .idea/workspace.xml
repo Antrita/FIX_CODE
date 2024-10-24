@@ -4,14 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="modifications">
-      <change afterPath="$PROJECT_DIR$/fastapi_app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/index.html" afterDir="false" />
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Implemented new UI.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/Client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Market_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/Market_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fastapi_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/fastapi_app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/Fix_UI.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,7 +36,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Modif1" />
+        <entry key="$PROJECT_DIR$" value="CARD_UI" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -70,13 +69,13 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Python.Client.executor": "Run",
+    "Python.Client.executor": "Debug",
     "Python.FIX_UI.executor": "Run",
-    "Python.Market_maker.executor": "Run",
+    "Python.Market_maker.executor": "Debug",
     "Python.fastapi_app.executor": "Run",
-    "Python.main.executor": "Run",
+    "Python.main.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "CARD__UI",
+    "git-widget-placeholder": "Data__1",
     "last_opened_file_path": "D:/Fix_UI",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
@@ -114,6 +113,9 @@
       <list>
         <item itemvalue="Python.Market_maker" />
         <item itemvalue="Python.Market_maker" />
+        <item itemvalue="Python.Market_maker" />
+        <item itemvalue="Python.Market_maker" />
+        <item itemvalue="Python.Market_maker" />
       </list>
     </recent_temporary>
   </component>
@@ -132,14 +134,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00003" summary="commit">
-      <option name="closed" value="true" />
-      <created>1725872484119</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1725872484119</updated>
     </task>
     <task id="LOCAL-00004" summary="commit">
       <option name="closed" value="true" />
@@ -525,7 +519,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729442926286</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="Implemented new UI.">
+      <option name="closed" value="true" />
+      <created>1729704467725</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1729704467725</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -565,6 +567,7 @@
     <MESSAGE value="Subscription functionality fixed." />
     <MESSAGE value="Added 4 types of market order." />
     <MESSAGE value="modifications" />
-    <option name="LAST_COMMIT_MESSAGE" value="modifications" />
+    <MESSAGE value="Implemented new UI." />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented new UI." />
   </component>
 </project>

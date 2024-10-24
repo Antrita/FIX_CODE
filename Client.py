@@ -120,11 +120,23 @@ class Client(fix.Application):
 
     def format_and_print_message(self, prefix, message):
         try:
-            formatted_message = message.toString().replace(chr(1), ' | ')
-            print(f"{prefix}: {formatted_message}")
+            # Special handling for market data messages
+            msgType = fix.MsgType()
+            message.getHeader().getField(msgType)
+
+            if msgType.getValue() in [fix.MsgType_MarketDataRequest, fix.MsgType_MarketDataSnapshotFullRefresh]:
+                formatted_message = message.toString().replace(chr(1), ' | ')
+                print(f"{prefix}: {formatted_message}")
+                return formatted_message
+            else:
+                # Regular message formatting for non-market data messages
+                formatted_message = message.toString().replace(chr(1), ' | ')
+                print(f"{prefix}: {formatted_message}")
+                return formatted_message
         except Exception as e:
             print(f"Error formatting message: {e}")
             print(f"{prefix}: {message}")
+            return str(message)
 
     def on_market_data(self, message):
         try:
@@ -205,6 +217,7 @@ class Client(fix.Application):
         except fix.RuntimeError as e:
             print(f"Error sending order: {e}")
             return None
+
     def subscribe_market_data(self, symbol="USD/BRL"):
         self.md_req_id = gen_order_id()
         request = fix44.MarketDataRequest()
@@ -224,11 +237,16 @@ class Client(fix.Application):
         request.addGroup(symbol_group)
 
         print(f"Subscribing to market data for symbol: {symbol}")
-        self.format_and_print_message("Sending MarketDataRequest", request)
+        formatted_msg = self.format_and_print_message("Sending MarketDataRequest", request)
         fix.Session.sendToTarget(request, self.session_id)
 
     def on_market_data(self, message):
+        try:
+            # Format the message with delimiters first
+            formatted_message = message.toString().replace(chr(1), ' | ')
+            print(f"Market Data Message: {formatted_message}")
 
+            # Keep existing processing intact
             symbol = fix.Symbol()
             md_req_id = fix.MDReqID()
             message.getField(symbol)
@@ -257,6 +275,15 @@ class Client(fix.Application):
 
                 print(f"  {entry_type.getValue()}: Price={price.getValue()}, "
                       f"Size={size.getValue()}, Date={date.getValue()}, Time={time.getValue()}")
+
+                # Format each entry with delimiters
+                entry_message = (f"NoMDEntries | MDEntryType={entry_type.getValue()} | "
+                                 f"MDEntryPx={price.getValue()} | MDEntrySize={size.getValue()} | "
+                                 f"MDEntryDate={date.getValue()} | MDEntryTime={time.getValue()}")
+                print(f"Entry in FIX format: {entry_message}")
+
+        except fix.FieldNotFound as e:
+            print(f"Error processing market data: {e}")
 
 
     def cancel_market_data(self):

@@ -19,17 +19,36 @@ class ConnectionManager:
         self.active_connections: set[WebSocket] = set()
         self.market_maker_output = []
 
+    def format_fix_message(self, message: str) -> str:
+        """Format FIX message with proper delimiters and clean structure"""
+        try:
+            # Split the message into parts
+            parts = message.split(chr(1))
+            # Filter out empty parts and format each tag-value pair
+            formatted_parts = []
+            for part in parts:
+                if part.strip():
+                    if '=' in part:
+                        tag, value = part.split('=', 1)
+                        formatted_parts.append(f"{tag.strip()}={value.strip()}")
+            # Join with proper delimiter
+            return " | ".join(formatted_parts)
+        except Exception as e:
+            logger.error(f"Error formatting FIX message: {e}")
+            return message
+
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.add(websocket)
         logger.info(f"New WebSocket connection. Total connections: {len(self.active_connections)}")
-
-        # Send initial market maker output history
+        # Send initial market maker output history with formatted messages
         for message in self.market_maker_output:
             await websocket.send_json({
                 "type": "maker_output",
-                "message": message
+                "message": self.format_fix_message(message)
             })
+
+
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)

@@ -92,7 +92,7 @@ class MarketMaker(fix.Application, CustomApplication):
             print(f"Warning: Field not found in message - {e}")
             print(f"Message content: {message}")
         except Exception as e:
-            print(f"Error processing message: {e}")
+            print(f"")
 
     def handle_new_order(self, message, session_id):
         # Display the received order message in pure FIX format
@@ -226,29 +226,29 @@ class MarketMaker(fix.Application, CustomApplication):
             self.is_paused = True
         print("Current subscriptions:", self.subscriptions)
 
-    def send_market_data(self, md_req_id, session_id, symbol):
-        if symbol not in self.prices:
-            print(f"Symbol {symbol} not found in price data")
+    def send_market_data(self, md_req_id, session_id, symbol_value):
+        if symbol_value not in self.prices:
+            print(f"Symbol {symbol_value} not found in price data")
             return
 
         snapshot = fix.Message()
         snapshot.getHeader().setField(fix.MsgType(fix.MsgType_MarketDataSnapshotFullRefresh))
         snapshot.setField(fix.MDReqID(md_req_id))
-        snapshot.setField(fix.Symbol(symbol))
+        snapshot.setField(fix.Symbol(symbol_value))
 
         group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
         group.setField(fix.MDEntryType(fix.MDEntryType_BID))
-        group.setField(fix.MDEntryPx(self.prices[symbol] - 0.01))
+        group.setField(fix.MDEntryPx(self.prices[symbol_value] - 0.01))
         group.setField(fix.MDEntrySize(100))
         snapshot.addGroup(group)
 
         group.setField(fix.MDEntryType(fix.MDEntryType_OFFER))
-        group.setField(fix.MDEntryPx(self.prices[symbol] + 0.01))
+        group.setField(fix.MDEntryPx(self.prices[symbol_value] + 0.01))
         group.setField(fix.MDEntrySize(100))
         snapshot.addGroup(group)
 
         fix.Session.sendToTarget(snapshot, session_id)
-        print(f"Sent market data for {symbol}: Bid={self.prices[symbol] - 0.01}, Offer={self.prices[symbol] + 0.01}")
+        print(f"Sent market data for {symbol_value}: Bid={self.prices[symbol_value] - 0.01}, Offer={self.prices[symbol_value] + 0.01}")
         time.sleep(10)
 
     def handle_order_status_request(self, message, session_id):

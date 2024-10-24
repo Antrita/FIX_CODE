@@ -31,11 +31,12 @@ state = GlobalState()
 def client_message_handler(prefix, message):
     try:
         raw_message = message.toString()
-        print(f"{prefix}: {raw_message}")
+        formatted_message = raw_message.replace(chr(1), ' | ')
+        print(f"{prefix}: {formatted_message}")
 
         if state.loop:
             asyncio.run_coroutine_threadsafe(
-                manager.broadcast_order_update(raw_message),
+                manager.broadcast_order_update(formatted_message),
                 state.loop
             )
     except Exception as e:
@@ -45,11 +46,12 @@ def client_message_handler(prefix, message):
 def market_maker_message_handler(prefix, message):
     try:
         raw_message = message.toString()
-        print(f"{prefix}: {raw_message}")
+        formatted_message = raw_message.replace(chr(1), ' | ')
+        print(f"{prefix}: {formatted_message}")
 
         if state.loop:
             asyncio.run_coroutine_threadsafe(
-                manager.broadcast_maker_output(raw_message),
+                manager.broadcast_maker_output(formatted_message),
                 state.loop
             )
     except Exception as e:
@@ -169,13 +171,94 @@ async def handle_command(command: dict):
         return {"status": "error", "message": str(e)}
 
 
+async def command_processor():
+    while state.running:
+        try:
+            command = await state.command_queue.get()
+            # Parse command using similar logic to client's parse_input
+            parts = command.split()
+            action = parts[0].lower()
+
+            # Format as FIX message
+            formatted_command = []
+            if action in ["status", "cancel"]:
+                if len(parts) >= 2:
+                    formatted_command.append(f"35={action}")
+                    formatted_command.append(f"11={parts[1]}")  # ClOrdID
+            else:
+                formatted_command.append(f"35={action}")
+                for i in range(1, len(parts), 2):
+                    if i + 1 < len(parts):
+                        formatted_command.append(f"{parts[i]}={parts[i + 1]}")
+
+            formatted_message = " | ".join(formatted_command)
+
+            await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: process_command_sync(command, formatted_message)
+            )
+        except Exception as e:
+            logger.error(f"Error processing command: {e}")
+        await asyncio.sleep(0.1)
+
+
 def process_command_sync(command):
     try:
         if state.client and state.client.session_id:
+            # Format the command here before processing
+            formatted_message = format_fix_command(command)
             state.client.process_command(command)
+
+            # Broadcast the formatted command to UI
+            if state.loop:
+                asyncio.run_coroutine_threadsafe(
+                    manager.broadcast_order_update(formatted_message),
+                    state.loop
+                )
     except Exception as e:
         logger.error(f"Error processing command synchronously: {e}")
 
+
+def format_fix_command(command: str) -> str:
+    """Format command into FIX message format with delimiters"""
+    try:
+        parts = command.split()
+        action = parts[0].lower()
+        formatted_parts = []
+
+        if action in ["status", "cancel"]:
+            if len(parts) >= 2:
+                formatted_parts.append(f"35={action}")
+                formatted_parts.append(f"11={parts[1]}")  # ClOrdID
+        else:
+            formatted_parts.append(f"35={action}")
+            # Handle order commands (buy/sell)
+            if action in ["buy", "sell"]:
+                if len(parts) >= 3:
+                    formatted_parts.append(f"54={'1' if action == 'buy' else '2'}")  # Side
+                    formatted_parts.append(f"55={parts[1]}")  # Symbol
+                    formatted_parts.append(f"38={parts[2]}")  # Quantity
+
+                    # Handle order type and price
+                    if len(parts) > 3:
+                        order_type = parts[3].lower()
+                        if order_type == "limit" and len(parts) > 4:
+                            formatted_parts.append("40=2")  # Order Type = Limit
+                            formatted_parts.append(f"44={parts[4]}")  # Price
+                        elif order_type == "market":
+                            formatted_parts.append("40=1")  # Order Type = Market
+                        elif order_type == "stop" and len(parts) > 4:
+                            formatted_parts.append("40=3")  # Order Type = Stop
+                            formatted_parts.append(f"99={parts[4]}")  # StopPx
+                        elif order_type == "stop_limit" and len(parts) > 5:
+                            formatted_parts.append("40=4")  # Order Type = Stop Limit
+                            formatted_parts.append(f"99={parts[4]}")  # StopPx
+                            formatted_parts.append(f"44={parts[5]}")  # Price
+
+        return " | ".join(formatted_parts)
+    except Exception as e:
+        logger.error(f"Error formatting command: {e}")
+        return command
 
 async def command_processor():
     while state.running:
