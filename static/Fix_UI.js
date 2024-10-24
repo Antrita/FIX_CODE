@@ -37,18 +37,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
 
-                    <div class="p-4 bg-gray-800 text-white rounded-lg">
+
+
+               <div class="p-4 bg-gray-800 text-white rounded-lg">
+    <h2 class="text-xl font-bold mb-4">Market Maker Output</h2>
+    <div id="maker-output" class="bg-gray-900 p-2 rounded h-96 overflow-y-auto font-mono text-sm">
+    </div>
+</div>
+
+<!-- Market Data Section (moved under Market Maker) -->
+<div class="p-4 bg-gray-800 text-white rounded-lg mt-4">
     <h2 class="text-xl font-bold mb-4">Market Data</h2>
     <div id="market-data" class="bg-gray-900 p-2 rounded h-48 overflow-y-auto font-mono text-xs">
     </div>
 </div>
-
-                <!-- Market Maker Section -->
-                <div class="p-4 bg-gray-800 text-white rounded-lg">
-                    <h2 class="text-xl font-bold mb-4">Market Maker Output</h2>
-                    <div id="maker-output" class="bg-gray-900 p-2 rounded h-96 overflow-y-auto font-mono text-sm">
-                    </div>
-                </div>
             </div>
         </div>
     `;
@@ -110,10 +112,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update functions
     function updateMarketData(data) {
     if (data) {
-        const div = document.createElement('div');
-        div.className = 'whitespace-pre mb-1 text-gray-300';
-        div.textContent = data;
-        marketDataDiv.appendChild(div);
+        // Create table if it doesn't exist
+        if (!marketDataDiv.querySelector('table')) {
+            const table = document.createElement('table');
+            table.className = 'w-full';
+            table.innerHTML = `
+                <colgroup>
+                    <col class="w-24">
+                    <col>
+                </colgroup>
+            `;
+            marketDataDiv.appendChild(table);
+        }
+
+        const table = marketDataDiv.querySelector('table');
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-800';
+
+        // Add time column
+        const timeCell = document.createElement('td');
+        timeCell.className = 'text-gray-500 text-xs pr-4 align-top';
+        timeCell.textContent = new Date().toLocaleTimeString();
+
+        // Add message column with hover effect
+        const messageCell = document.createElement('td');
+        messageCell.className = 'text-xs relative group';
+        messageCell.innerHTML = `
+            <div class="truncate">${data}</div>
+            <div class="hidden group-hover:block absolute left-0 top-0 bg-gray-700 p-2 rounded shadow-lg z-10 whitespace-pre-wrap">
+                ${data}
+            </div>
+        `;
+
+        row.appendChild(timeCell);
+        row.appendChild(messageCell);
+        table.appendChild(row);
         marketDataDiv.scrollTop = marketDataDiv.scrollHeight;
     }
 }
