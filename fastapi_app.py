@@ -54,28 +54,44 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
         logger.info(f"WebSocket disconnected. Remaining connections: {len(self.active_connections)}")
 
-    async def broadcast_market_data(self, data: dict):
+    async def broadcast_market_data(self, data: str):
+        """Specifically handle market data messages"""
         message = {
             "type": "market_data",
-            "data": data["data"],
-            "prefix": data["prefix"]
+            "data": data
         }
         await self.broadcast(json.dumps(message))
 
     async def broadcast_maker_output(self, message: str):
-        self.market_maker_output.append(message)
-        ws_message = {
-            "type": "maker_output",
-            "message": message
-        }
-        await self.broadcast(json.dumps(ws_message))
+        """Handle market maker output messages"""
+        # Only broadcast non-market data messages as maker output
+        if not self._is_market_data_message(message):
+            ws_message = {
+                "type": "maker_output",
+                "message": message
+            }
+            await self.broadcast(json.dumps(ws_message))
 
     async def broadcast_order_update(self, message: str):
-        ws_message = {
-            "type": "order_update",
-            "order": message
-        }
-        await self.broadcast(json.dumps(ws_message))
+        """Handle order update messages"""
+        # Only broadcast if it's a genuine order update
+        if not self._is_market_data_message(message):
+            ws_message = {
+                "type": "order_update",
+                "order": message
+            }
+            await self.broadcast(json.dumps(ws_message))
+
+    def _is_market_data_message(self, message: str) -> bool:
+        """Helper method to identify market data messages"""
+        # Check if message contains market data indicators
+        market_data_indicators = [
+            "MarketDataSnapshotFullRefresh",
+            "MDEntryType",
+            "MDReqID",
+            "NoMDEntries"
+        ]
+        return any(indicator in message for indicator in market_data_indicators)
 
     async def broadcast(self, message: str):
         disconnected = set()

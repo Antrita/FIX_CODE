@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Readability improved." />
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="modifications.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fastapi_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/fastapi_app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/Fix_UI.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +34,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="CARD_UI" />
+        <entry key="$PROJECT_DIR$" value="Data_1" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -66,9 +71,9 @@
     "Python.FIX_UI.executor": "Run",
     "Python.Market_maker.executor": "Run",
     "Python.fastapi_app.executor": "Run",
-    "Python.main.executor": "Debug",
+    "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Data__1",
+    "git-widget-placeholder": "Data__2",
     "last_opened_file_path": "D:/Fix_UI",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
@@ -125,14 +130,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00005" summary="README.md">
-      <option name="closed" value="true" />
-      <created>1725873383893</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1725873383893</updated>
     </task>
     <task id="LOCAL-00006" summary="README.md">
       <option name="closed" value="true" />
@@ -518,7 +515,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729788617784</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="modifications.">
+      <option name="closed" value="true" />
+      <created>1729788973055</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1729788973055</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -560,6 +565,7 @@
     <MESSAGE value="modifications" />
     <MESSAGE value="Formated FIX messages." />
     <MESSAGE value="Readability improved." />
-    <option name="LAST_COMMIT_MESSAGE" value="Readability improved." />
+    <MESSAGE value="modifications." />
+    <option name="LAST_COMMIT_MESSAGE" value="modifications." />
   </component>
 </project>

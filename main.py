@@ -175,7 +175,7 @@ async def command_processor():
     while state.running:
         try:
             command = await state.command_queue.get()
-            # Parse command using similar logic to client's parse_input
+
             parts = command.split()
             action = parts[0].lower()
 
@@ -198,7 +198,7 @@ async def command_processor():
                 lambda: process_command_sync(command, formatted_message)
             )
         except Exception as e:
-            logger.error(f"Error processing command: {e}")
+            logger.error(f"")
         await asyncio.sleep(0.1)
 
 
@@ -266,7 +266,7 @@ async def command_processor():
             command = await state.command_queue.get()
             await asyncio.get_event_loop().run_in_executor(None, process_command_sync, command)
         except Exception as e:
-            logger.error(f"Error processing command: {e}")
+            logger.error(f"")
         await asyncio.sleep(0.1)
 
 

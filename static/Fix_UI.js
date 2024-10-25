@@ -81,19 +81,21 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+    const data = JSON.parse(event.data);
 
-        if (data.type === 'market_data') {
-            marketData = data.data;
-            updateMarketData(data.data);
-        } else if (data.type === 'maker_output') {
-            makerOutput.push(data.message);
-            updateMakerOutput(data.message);
-        } else if (data.type === 'order_update') {
-            orderHistory.push(data.order);
-            updateOrderHistory(data.order);
-        }
-    };
+    if (data.type === 'market_data') {
+        // Handle market data updates
+        updateMarketData(data.data);
+    } else if (data.type === 'maker_output') {
+        // Handle market maker output
+        makerOutput.push(data.message);
+        updateMakerOutput(data.message);
+    } else if (data.type === 'order_update') {
+        // Handle order updates
+        orderHistory.push(data.order);
+        updateOrderHistory(data.order);
+    }
+};
 
     // Event handlers
     commandForm.onsubmit = (e) => {
@@ -109,47 +111,47 @@ document.addEventListener('DOMContentLoaded', function() {
         commandInput.value = '';
     };
 
-    // Update functions
     function updateMarketData(data) {
-    if (data) {
-        // Create table if it doesn't exist
-        if (!marketDataDiv.querySelector('table')) {
-            const table = document.createElement('table');
-            table.className = 'w-full';
-            table.innerHTML = `
-                <colgroup>
-                    <col class="w-24">
-                    <col>
-                </colgroup>
-            `;
-            marketDataDiv.appendChild(table);
-        }
+    if (!data) return;
 
-        const table = marketDataDiv.querySelector('table');
-        const row = document.createElement('tr');
-        row.className = 'hover:bg-gray-800';
-
-        // Add time column
-        const timeCell = document.createElement('td');
-        timeCell.className = 'text-gray-500 text-xs pr-4 align-top';
-        timeCell.textContent = new Date().toLocaleTimeString();
-
-        // Add message column with hover effect
-        const messageCell = document.createElement('td');
-        messageCell.className = 'text-xs relative group';
-        messageCell.innerHTML = `
-            <div class="truncate">${data}</div>
-            <div class="hidden group-hover:block absolute left-0 top-0 bg-gray-700 p-2 rounded shadow-lg z-10 whitespace-pre-wrap">
-                ${data}
-            </div>
+    // Create table if it doesn't exist
+    if (!marketDataDiv.querySelector('table')) {
+        const table = document.createElement('table');
+        table.className = 'w-full';
+        table.innerHTML = `
+            <colgroup>
+                <col class="w-24">
+                <col>
+            </colgroup>
         `;
-
-        row.appendChild(timeCell);
-        row.appendChild(messageCell);
-        table.appendChild(row);
-        marketDataDiv.scrollTop = marketDataDiv.scrollHeight;
+        marketDataDiv.appendChild(table);
     }
+
+    const table = marketDataDiv.querySelector('table');
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-800';
+
+    // Add timestamp
+    const timeCell = document.createElement('td');
+    timeCell.className = 'text-gray-500 text-xs pr-4 align-top';
+    timeCell.textContent = new Date().toLocaleTimeString();
+
+    // Add data content with hover effect
+    const dataCell = document.createElement('td');
+    dataCell.className = 'text-xs relative group';
+    dataCell.innerHTML = `
+        <div class="truncate">${data}</div>
+        <div class="hidden group-hover:block absolute left-0 top-0 bg-gray-700 p-2 rounded shadow-lg z-10 whitespace-pre-wrap">
+            ${data}
+        </div>
+    `;
+
+    row.appendChild(timeCell);
+    row.appendChild(dataCell);
+    table.appendChild(row);
+    marketDataDiv.scrollTop = marketDataDiv.scrollHeight;
 }
+
 
     function updateOrderHistory(order) {
     // Create table if it doesn't exist
