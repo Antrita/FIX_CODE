@@ -42,11 +42,13 @@ A simple menu is displayed after the FIX application has started. You can use th
 ### Users can now enter commands like:
 ( For buy/sell, quantitiy is added seperately )
 
-- buy 55 EUR/USD 38 
-- sell 55 USD/JPY 38 
-- subscribe 55 GBP/USD
-- cancel 41 [CLOrdID] 
-- status 11 [OrigCLOrdID]
+- buy USD/BRL 100 
+- sell USD/BRL 100 
+- buy USD/BRL 100 stop  1.10
+- sell USD/BRL 100 stop_limit 1.10 1.10
+- subscribe USD/BRL
+- cancel  [CLOrdID] 
+- status  [OrigCLOrdID]
 
 Enter the corresponding command or action to perform the desired operation.
 
