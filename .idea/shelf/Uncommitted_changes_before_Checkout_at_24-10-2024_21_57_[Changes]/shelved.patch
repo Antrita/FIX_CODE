@@ -1,0 +1,469 @@
+Index: static/Fix_UI.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// Fix_UI.js\r\ndocument.addEventListener('DOMContentLoaded', function() {\r\n    // State variables\r\n    let marketData = null;\r\n    let orderHistory = [];\r\n    let makerOutput = [];\r\n    let status = 'Disconnected';\r\n    const symbol = 'USD/BRL';\r\n\r\n    // Create UI elements\r\n    const app = document.getElementById('root');\r\n    app.innerHTML = `\r\n        <div class=\"p-4 bg-gray-900 min-h-screen\">\r\n            <div class=\"mb-4 text-white\">\r\n                <h1 class=\"text-2xl font-bold mb-2\">FIX Trading Interface</h1>\r\n                <div id=\"status-indicator\" class=\"inline-block px-3 py-1 rounded bg-red-500\">\r\n                    ${status}\r\n                </div>\r\n            </div>\r\n\r\n            <div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\">\r\n                <!-- Client Section -->\r\n                <div class=\"space-y-4\">\r\n                    <div class=\"p-4 bg-gray-800 text-white rounded-lg\">\r\n                        <h2 class=\"text-xl font-bold mb-4 flex items-center\">\r\n                            <span class=\"mr-2\">\uD83D\uDCF1</span> Client Terminal\r\n                        </h2>\r\n                        <form id=\"command-form\" class=\"mb-4\">\r\n                            <input\r\n                                type=\"text\"\r\n                                id=\"command-input\"\r\n                                placeholder=\"Enter command (e.g., buy USD/BRL 100)\"\r\n                                class=\"w-full p-2 bg-gray-700 rounded border border-gray-600 text-white\"\r\n                            />\r\n                        </form>\r\n                        <div id=\"order-history\" class=\"bg-gray-900 p-2 rounded h-48 overflow-y-auto\">\r\n                        </div>\r\n                    </div>\r\n\r\n                    <div class=\"p-4 bg-gray-800 text-white rounded-lg\">\r\n    <h2 class=\"text-xl font-bold mb-4\">Market Data</h2>\r\n    <div id=\"market-data\" class=\"bg-gray-900 p-2 rounded h-48 overflow-y-auto font-mono text-xs\">\r\n    </div>\r\n</div>\r\n\r\n                <!-- Market Maker Section -->\r\n                <div class=\"p-4 bg-gray-800 text-white rounded-lg\">\r\n                    <h2 class=\"text-xl font-bold mb-4\">Market Maker Output</h2>\r\n                    <div id=\"maker-output\" class=\"bg-gray-900 p-2 rounded h-96 overflow-y-auto font-mono text-sm\">\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    `;\r\n\r\n    // Get UI elements\r\n    const statusIndicator = document.getElementById('status-indicator');\r\n    const commandForm = document.getElementById('command-form');\r\n    const commandInput = document.getElementById('command-input');\r\n    const orderHistoryDiv = document.getElementById('order-history');\r\n    const makerOutputDiv = document.getElementById('maker-output');\r\n    const marketDataDiv = document.getElementById('market-data');\r\n\r\n    // WebSocket connection\r\n    const ws = new WebSocket(`ws://${window.location.host}/ws`);\r\n\r\n    ws.onopen = () => {\r\n        status = 'Connected';\r\n        statusIndicator.textContent = status;\r\n        statusIndicator.classList.remove('bg-red-500');\r\n        statusIndicator.classList.add('bg-green-500');\r\n    };\r\n\r\n    ws.onclose = () => {\r\n        status = 'Disconnected';\r\n        statusIndicator.textContent = status;\r\n        statusIndicator.classList.remove('bg-green-500');\r\n        statusIndicator.classList.add('bg-red-500');\r\n    };\r\n\r\n    ws.onmessage = (event) => {\r\n        const data = JSON.parse(event.data);\r\n\r\n        if (data.type === 'market_data') {\r\n            marketData = data.data;\r\n            updateMarketData(data.data);\r\n        } else if (data.type === 'maker_output') {\r\n            makerOutput.push(data.message);\r\n            updateMakerOutput(data.message);\r\n        } else if (data.type === 'order_update') {\r\n            orderHistory.push(data.order);\r\n            updateOrderHistory(data.order);\r\n        }\r\n    };\r\n\r\n    // Event handlers\r\n    commandForm.onsubmit = (e) => {\r\n        e.preventDefault();\r\n        const command = commandInput.value;\r\n\r\n        fetch('/api/command', {\r\n            method: 'POST',\r\n            headers: { 'Content-Type': 'application/json' },\r\n            body: JSON.stringify({ command })\r\n        });\r\n\r\n        commandInput.value = '';\r\n    };\r\n\r\n    // Update functions\r\n    function updateMarketData(data) {\r\n    if (data) {\r\n        const div = document.createElement('div');\r\n        div.className = 'whitespace-pre mb-1 text-gray-300';\r\n        div.textContent = data;\r\n        marketDataDiv.appendChild(div);\r\n        marketDataDiv.scrollTop = marketDataDiv.scrollHeight;\r\n    }\r\n}\r\n\r\n    function updateOrderHistory(order) {\r\n        const div = document.createElement('div');\r\n        div.className = 'mb-2 text-sm';\r\n        div.textContent = order;\r\n        orderHistoryDiv.appendChild(div);\r\n        orderHistoryDiv.scrollTop = orderHistoryDiv.scrollHeight;\r\n    }\r\n\r\n    function updateMakerOutput(message) {\r\n        const div = document.createElement('div');\r\n        div.className = 'whitespace-pre-wrap mb-1';\r\n        div.textContent = message;\r\n        makerOutputDiv.appendChild(div);\r\n        makerOutputDiv.scrollTop = makerOutputDiv.scrollHeight;\r\n    }\r\n});
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/static/Fix_UI.js b/static/Fix_UI.js
+--- a/static/Fix_UI.js	(revision fb0da841eed25d4625052d52f4619ee67aaf6696)
++++ b/static/Fix_UI.js	(date 1729787217008)
+@@ -1,7 +1,6 @@
+ // Fix_UI.js
+ document.addEventListener('DOMContentLoaded', function() {
+     // State variables
+-    let marketData = null;
+     let orderHistory = [];
+     let makerOutput = [];
+     let status = 'Disconnected';
+@@ -10,127 +9,178 @@
+     // Create UI elements
+     const app = document.getElementById('root');
+     app.innerHTML = `
+-        <div class="p-4 bg-gray-900 min-h-screen">
+-            <div class="mb-4 text-white">
+-                <h1 class="text-2xl font-bold mb-2">FIX Trading Interface</h1>
+-                <div id="status-indicator" class="inline-block px-3 py-1 rounded bg-red-500">
+-                    ${status}
+-                </div>
+-            </div>
++    <div class="p-4 bg-gray-900 min-h-screen">
++        <div class="mb-4 text-white">
++            <h1 class="text-2xl font-bold mb-2">FIX Trading Interface</h1>
++            <div id="status-indicator" class="inline-block px-3 py-1 rounded bg-red-500">
++                ${status}
++            </div>
++        </div>
+ 
+-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+-                <!-- Client Section -->
+-                <div class="space-y-4">
+-                    <div class="p-4 bg-gray-800 text-white rounded-lg">
+-                        <h2 class="text-xl font-bold mb-4 flex items-center">
+-                            <span class="mr-2">📱</span> Client Terminal
+-                        </h2>
+-                        <form id="command-form" class="mb-4">
+-                            <input
+-                                type="text"
+-                                id="command-input"
+-                                placeholder="Enter command (e.g., buy USD/BRL 100)"
+-                                class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white"
+-                            />
+-                        </form>
+-                        <div id="order-history" class="bg-gray-900 p-2 rounded h-48 overflow-y-auto">
+-                        </div>
++        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
++            <!-- Client Section -->
++            <div class="space-y-4">
++                <div class="p-4 bg-gray-800 text-white rounded-lg">
++                    <h2 class="text-xl font-bold mb-4 flex items-center">
++                        <span class="mr-2">📱</span> Client Terminal
++                    </h2>
++                    <form id="command-form" class="mb-4">
++                        <input
++                            type="text"
++                            id="command-input"
++                            placeholder="Enter command (e.g., buy USD/BRL 100)"
++                            class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white"
++                        />
++                    </form>
++                    <div id="order-history" class="message-container">
++                        <table class="message-table">
++                            <thead>
++                                <tr>
++                                    <th>Time</th>
++                                    <th>Message</th>
++                                </tr>
++                            </thead>
++                            <tbody id="order-history-body"></tbody>
++                        </table>
+                     </div>
+-
+-                    <div class="p-4 bg-gray-800 text-white rounded-lg">
+-    <h2 class="text-xl font-bold mb-4">Market Data</h2>
+-    <div id="market-data" class="bg-gray-900 p-2 rounded h-48 overflow-y-auto font-mono text-xs">
+-    </div>
+-</div>
++                </div>
++            </div>
+ 
+-                <!-- Market Maker Section -->
+-                <div class="p-4 bg-gray-800 text-white rounded-lg">
+-                    <h2 class="text-xl font-bold mb-4">Market Maker Output</h2>
+-                    <div id="maker-output" class="bg-gray-900 p-2 rounded h-96 overflow-y-auto font-mono text-sm">
+-                    </div>
+-                </div>
+-            </div>
+-        </div>
+-    `;
++            <!-- Market Maker Section -->
++            <div class="p-4 bg-gray-800 text-white rounded-lg">
++                <h2 class="text-xl font-bold mb-4">Market Maker Output</h2>
++                <div id="maker-output" class="message-container">
++                    <table class="message-table">
++                        <thead>
++                            <tr>
++                                <th>Time</th>
++                                <th>Message</th>
++                            </tr>
++                        </thead>
++                        <tbody id="maker-output-body"></tbody>
++                    </table>
++                </div>
++            </div>
++        </div>
++    </div>
++`;
+ 
+-    // Get UI elements
+-    const statusIndicator = document.getElementById('status-indicator');
+-    const commandForm = document.getElementById('command-form');
+-    const commandInput = document.getElementById('command-input');
+-    const orderHistoryDiv = document.getElementById('order-history');
+-    const makerOutputDiv = document.getElementById('maker-output');
+-    const marketDataDiv = document.getElementById('market-data');
+-
+-    // WebSocket connection
+-    const ws = new WebSocket(`ws://${window.location.host}/ws`);
+-
+-    ws.onopen = () => {
+-        status = 'Connected';
+-        statusIndicator.textContent = status;
+-        statusIndicator.classList.remove('bg-red-500');
+-        statusIndicator.classList.add('bg-green-500');
+-    };
+-
+-    ws.onclose = () => {
+-        status = 'Disconnected';
+-        statusIndicator.textContent = status;
+-        statusIndicator.classList.remove('bg-green-500');
+-        statusIndicator.classList.add('bg-red-500');
+-    };
++// Update functions for message display
++function createMessageRow(message) {
++    const tr = document.createElement('tr');
++    tr.className = 'message-row';
+ 
+-    ws.onmessage = (event) => {
+-        const data = JSON.parse(event.data);
++    const timeCell = document.createElement('td');
++    timeCell.className = 'time-cell';
++    timeCell.textContent = new Date().toLocaleTimeString();
+ 
+-        if (data.type === 'market_data') {
+-            marketData = data.data;
+-            updateMarketData(data.data);
+-        } else if (data.type === 'maker_output') {
+-            makerOutput.push(data.message);
+-            updateMakerOutput(data.message);
+-        } else if (data.type === 'order_update') {
+-            orderHistory.push(data.order);
+-            updateOrderHistory(data.order);
+-        }
+-    };
++    const messageCell = document.createElement('td');
++    messageCell.className = 'message-cell';
+ 
+-    // Event handlers
+-    commandForm.onsubmit = (e) => {
+-        e.preventDefault();
+-        const command = commandInput.value;
++    const messageContent = document.createElement('div');
++    messageContent.className = 'message-content';
++    messageContent.textContent = message;
++    messageContent.setAttribute('data-full-message', message);
+ 
+-        fetch('/api/command', {
+-            method: 'POST',
+-            headers: { 'Content-Type': 'application/json' },
+-            body: JSON.stringify({ command })
+-        });
++    messageCell.appendChild(messageContent);
++    tr.appendChild(timeCell);
++    tr.appendChild(messageCell);
+ 
+-        commandInput.value = '';
+-    };
+-
+-    // Update functions
+-    function updateMarketData(data) {
+-    if (data) {
+-        const div = document.createElement('div');
+-        div.className = 'whitespace-pre mb-1 text-gray-300';
+-        div.textContent = data;
+-        marketDataDiv.appendChild(div);
+-        marketDataDiv.scrollTop = marketDataDiv.scrollHeight;
+-    }
++    return tr;
+ }
+ 
+-    function updateOrderHistory(order) {
+-        const div = document.createElement('div');
+-        div.className = 'mb-2 text-sm';
+-        div.textContent = order;
+-        orderHistoryDiv.appendChild(div);
+-        orderHistoryDiv.scrollTop = orderHistoryDiv.scrollHeight;
+-    }
++function updateOrderHistory(order) {
++    const tr = document.createElement('tr');
++    tr.className = 'message-row';
++
++    const timeCell = document.createElement('td');
++    timeCell.className = 'text-gray-500 w-20';
++    timeCell.textContent = new Date().toLocaleTimeString();
++
++    const messageCell = document.createElement('td');
++    messageCell.className = 'relative';
++
++    const messageContent = document.createElement('div');
++    messageContent.className = 'message-content text-gray-300';
++    messageContent.textContent = order;
++
++    const tooltip = document.createElement('div');
++    tooltip.className = 'tooltip-content';
++    tooltip.textContent = order;
++
++    messageCell.appendChild(messageContent);
++    messageCell.appendChild(tooltip);
++    tr.appendChild(timeCell);
++    tr.appendChild(messageCell);
++
++    // Add to existing order history div
++    if (!document.querySelector('#order-history table')) {
++        const table = createMessageTable();
++        orderHistoryDiv.appendChild(table);
++    }
++
++    document.querySelector('#order-history tbody').appendChild(tr);
++    orderHistoryDiv.scrollTop = orderHistoryDiv.scrollHeight;
++}
+ 
+-    function updateMakerOutput(message) {
+-        const div = document.createElement('div');
+-        div.className = 'whitespace-pre-wrap mb-1';
+-        div.textContent = message;
+-        makerOutputDiv.appendChild(div);
+-        makerOutputDiv.scrollTop = makerOutputDiv.scrollHeight;
+-    }
+-});
+\ No newline at end of file
++function updateMakerOutput(message) {
++    const tr = document.createElement('tr');
++    tr.className = 'message-row';
++
++    const timeCell = document.createElement('td');
++    timeCell.className = 'text-gray-500 w-20';
++    timeCell.textContent = new Date().toLocaleTimeString();
++
++    const messageCell = document.createElement('td');
++    messageCell.className = 'relative';
++
++    const messageContent = document.createElement('div');
++    messageContent.className = 'message-content text-gray-300';
++    messageContent.textContent = message;
++
++    const tooltip = document.createElement('div');
++    tooltip.className = 'tooltip-content';
++    tooltip.textContent = message;
++
++    messageCell.appendChild(messageContent);
++    messageCell.appendChild(tooltip);
++    tr.appendChild(timeCell);
++    tr.appendChild(messageCell);
++
++    // Add to existing maker output div
++    if (!document.querySelector('#maker-output table')) {
++        const table = createMessageTable();
++        makerOutputDiv.appendChild(table);
++    }
++
++    document.querySelector('#maker-output tbody').appendChild(tr);
++    makerOutputDiv.scrollTop = makerOutputDiv.scrollHeight;
++}
++
++// Helper function to create table structure
++function createMessageTable() {
++    const table = document.createElement('table');
++    table.className = 'message-table';
++
++    const thead = document.createElement('thead');
++    const headerRow = document.createElement('tr');
++
++    const timeHeader = document.createElement('th');
++    timeHeader.textContent = 'Time';
++    timeHeader.className = 'text-gray-400';
++
++    const messageHeader = document.createElement('th');
++    messageHeader.textContent = 'Message';
++    messageHeader.className = 'text-gray-400';
++
++    headerRow.appendChild(timeHeader);
++    headerRow.appendChild(messageHeader);
++    thead.appendChild(headerRow);
++
++    const tbody = document.createElement('tbody');
++
++    table.appendChild(thead);
++    table.appendChild(tbody);
++
++    return table;
++}
+\ No newline at end of file
+Index: static/styles.css
+===================================================================
+diff --git a/static/styles.css b/static/styles.css
+new file mode 100644
+--- /dev/null	(date 1729786512531)
++++ b/static/styles.css	(date 1729786512531)
+@@ -0,0 +1,72 @@
++/* Message table styles */
++.message-container {
++    background-color: #1f2937;
++    border-radius: 0.5rem;
++    overflow: hidden;
++}
++
++.message-table {
++    width: 100%;
++    border-collapse: collapse;
++    font-family: monospace;
++    font-size: 0.875rem;
++}
++
++.message-table thead {
++    position: sticky;
++    top: 0;
++    background-color: #111827;
++    z-index: 10;
++}
++
++.message-table th {
++    padding: 0.5rem;
++    text-align: left;
++    color: #9ca3af;
++    font-weight: 600;
++}
++
++.message-table td {
++    padding: 0.5rem;
++    border-bottom: 1px solid #374151;
++}
++
++.message-row {
++    transition: background-color 0.15s;
++}
++
++.message-row:hover {
++    background-color: #374151;
++}
++
++.message-content {
++    overflow: hidden;
++    text-overflow: ellipsis;
++    white-space: nowrap;
++    max-width: 800px;
++    position: relative;
++}
++
++.message-row:hover .message-content::after {
++    content: attr(data-full-message);
++    position: absolute;
++    left: 0;
++    top: -100%;
++    background-color: #4b5563;
++    padding: 0.5rem;
++    border-radius: 0.25rem;
++    white-space: pre-wrap;
++    word-break: break-all;
++    max-width: 800px;
++    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
++    z-index: 50;
++}
++
++.time-cell {
++    color: #6b7280;
++    width: 100px;
++}
++
++.message-cell {
++    color: #d1d5db;
++}
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1\" name=\"Changes\" comment=\"Implemented new UI.\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Client.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/Client.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Market_maker.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/Market_maker.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/fastapi_app.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/fastapi_app.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/main.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/main.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/static/Fix_UI.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/static/Fix_UI.js\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Python Script\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Merge.Settings\">\r\n    <option name=\"BRANCH\" value=\"origin/master\" />\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"PUSH_TAGS\">\r\n      <GitPushTagMode>\r\n        <option name=\"argument\" value=\"--tags\" />\r\n        <option name=\"title\" value=\"All\" />\r\n      </GitPushTagMode>\r\n    </option>\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"CARD_UI\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;Antrita&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/Antrita/FIX_CODE&quot;,\r\n    &quot;accountId&quot;: &quot;a85397e6-f002-4983-8fa2-8d2db2cb4766&quot;\r\n  }\r\n}</component>\r\n  <component name=\"ProblemsViewState\">\r\n    <option name=\"selectedTabId\" value=\"CurrentFile\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 1\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2lhhHl49sY85dxhBttjXAQgFXpH\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"autoscrollToSource\" value=\"true\" />\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"ASKED_SHARE_PROJECT_CONFIGURATION_FILES\": \"true\",\r\n    \"Python.Client.executor\": \"Debug\",\r\n    \"Python.FIX_UI.executor\": \"Run\",\r\n    \"Python.Market_maker.executor\": \"Debug\",\r\n    \"Python.fastapi_app.executor\": \"Run\",\r\n    \"Python.main.executor\": \"Debug\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"git-widget-placeholder\": \"Data__1\",\r\n    \"last_opened_file_path\": \"D:/Fix_UI\",\r\n    \"settings.editor.selected.configurable\": \"project.propVCSSupport.DirectoryMappings\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"MoveFile.RECENT_KEYS\">\r\n      <recent name=\"D:\\FIX_CODE\\static\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"Market_maker\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"FIX_CODE\" />\r\n      <option name=\"ENV_FILES\" value=\"\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"SDK_NAME\" value=\"FIX_Market\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/Market_maker.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"Python.Market_maker\" />\r\n        <item itemvalue=\"Python.Market_maker\" />\r\n        <item itemvalue=\"Python.Market_maker\" />\r\n        <item itemvalue=\"Python.Market_maker\" />\r\n        <item itemvalue=\"Python.Market_maker\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-python-sdk-abccbe9d933a-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.20224.428\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1\" name=\"Changes\" comment=\"\" />\r\n      <created>1725638129426</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1725638129426</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00004\" summary=\"commit\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1725872498129</created>\r\n      <option name=\"number\" value=\"00004\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1725872498129</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00005\" summary=\"README.md\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1725873383893</created>\r\n      <option name=\"number\" value=\"00005\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1725873383893</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00006\" summary=\"README.md\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1725874341745</created>\r\n      <option name=\"number\" value=\"00006\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1725874341745</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00007\" summary=\"COMMIT\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1725874519566</created>\r\n      <option name=\"number\" value=\"00007\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00007\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1725874519566</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00008\" summary=\"COMMIT\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1725892056802</created>\r\n      <option name=\"number\" value=\"00008\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00008\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1725892056802</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00009\" summary=\"Modify\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1725900152495</created>\r\n      <option name=\"number\" value=\"00009\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00009\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1725900152495</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00010\" summary=\"Modify\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726064863440</created>\r\n      <option name=\"number\" value=\"00010\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00010\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726064863440</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00011\" summary=\"Modify\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726065829509</created>\r\n      <option name=\"number\" value=\"00011\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00011\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726065829509</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00012\" summary=\"Modify\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726066153574</created>\r\n      <option name=\"number\" value=\"00012\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00012\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726066153574</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00013\" summary=\"Modify\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726066189375</created>\r\n      <option name=\"number\" value=\"00013\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00013\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726066189375</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00014\" summary=\"UPDATE README\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726067016108</created>\r\n      <option name=\"number\" value=\"00014\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00014\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726067016108</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00015\" summary=\"UPDATE README\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726067146886</created>\r\n      <option name=\"number\" value=\"00015\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00015\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726067146886</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00016\" summary=\"UPDATE README\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726151272147</created>\r\n      <option name=\"number\" value=\"00016\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00016\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726151272147</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00017\" summary=\"Added GUI\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726498482557</created>\r\n      <option name=\"number\" value=\"00017\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00017\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726498482557</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00018\" summary=\"Added GUI\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1726498555124</created>\r\n      <option name=\"number\" value=\"00018\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00018\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1726498555124</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00019\" summary=\"Removed GUI\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727362271026</created>\r\n      <option name=\"number\" value=\"00019\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00019\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727362271026</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00020\" summary=\"Modification\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727795578032</created>\r\n      <option name=\"number\" value=\"00020\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00020\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727795578032</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00021\" summary=\"Replaced delimiter with &quot; | &quot;\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727795612278</created>\r\n      <option name=\"number\" value=\"00021\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00021\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727795612278</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00022\" summary=\"Modification\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727796843370</created>\r\n      <option name=\"number\" value=\"00022\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00022\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727796843370</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00023\" summary=\"Deleted UI\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727796927978</created>\r\n      <option name=\"number\" value=\"00023\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00023\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727796927978</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00024\" summary=\"Updated readme\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727844016865</created>\r\n      <option name=\"number\" value=\"00024\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00024\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727844016865</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00025\" summary=\"Handling cancel order, status request\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727844088579</created>\r\n      <option name=\"number\" value=\"00025\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00025\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727844088579</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00026\" summary=\"Error handling, custom tag definition\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727844129841</created>\r\n      <option name=\"number\" value=\"00026\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00026\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727844129841</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00027\" summary=\"updates\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727844151577</created>\r\n      <option name=\"number\" value=\"00027\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00027\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727844151577</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00028\" summary=\"Added comments as reminders for modification.\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727844464800</created>\r\n      <option name=\"number\" value=\"00028\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00028\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727844464800</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00029\" summary=\"Modification\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727845988334</created>\r\n      <option name=\"number\" value=\"00029\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00029\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727845988334</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00030\" summary=\"Modification\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727870968734</created>\r\n      <option name=\"number\" value=\"00030\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00030\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727870968734</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00031\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727872958606</created>\r\n      <option name=\"number\" value=\"00031\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00031\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727872958606</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00032\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727873257417</created>\r\n      <option name=\"number\" value=\"00032\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00032\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727873257417</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00033\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727878610664</created>\r\n      <option name=\"number\" value=\"00033\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00033\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727878610664</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00034\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727879072352</created>\r\n      <option name=\"number\" value=\"00034\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00034\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727879072352</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00035\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727879103362</created>\r\n      <option name=\"number\" value=\"00035\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00035\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727879103362</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00036\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727881086482</created>\r\n      <option name=\"number\" value=\"00036\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00036\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727881086483</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00037\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727959395711</created>\r\n      <option name=\"number\" value=\"00037\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00037\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727959395711</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00038\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727960139081</created>\r\n      <option name=\"number\" value=\"00038\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00038\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727960139081</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00039\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727966613630</created>\r\n      <option name=\"number\" value=\"00039\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00039\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727966613630</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00040\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727967554549</created>\r\n      <option name=\"number\" value=\"00040\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00040\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727967554549</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00041\" summary=\"Modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1727968456567</created>\r\n      <option name=\"number\" value=\"00041\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00041\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1727968456567</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00042\" summary=\"Modified market subscription functionality\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1728055862243</created>\r\n      <option name=\"number\" value=\"00042\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00042\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1728055862243</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00043\" summary=\"Modified market subscription functionality\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1728395974282</created>\r\n      <option name=\"number\" value=\"00043\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00043\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1728395974282</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00044\" summary=\"Modified market subscription functionality\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1728398606100</created>\r\n      <option name=\"number\" value=\"00044\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00044\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1728398606100</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00045\" summary=\"Added heartbeat logging\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1728404999552</created>\r\n      <option name=\"number\" value=\"00045\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00045\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1728404999552</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00046\" summary=\"set reconnect interval to 60 seconds\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1728405034677</created>\r\n      <option name=\"number\" value=\"00046\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00046\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1728405034677</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00047\" summary=\"modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1728405566504</created>\r\n      <option name=\"number\" value=\"00047\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00047\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1728405566504</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00048\" summary=\"modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1728406494091</created>\r\n      <option name=\"number\" value=\"00048\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00048\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1728406494091</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00049\" summary=\"Subscription functionality fixed.\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1729272594889</created>\r\n      <option name=\"number\" value=\"00049\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00049\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1729272594889</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00050\" summary=\"Subscription functionality fixed.\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1729273999811</created>\r\n      <option name=\"number\" value=\"00050\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00050\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1729273999812</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00051\" summary=\"modifications\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1729442926286</created>\r\n      <option name=\"number\" value=\"00051\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00051\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1729442926286</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00052\" summary=\"Implemented new UI.\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1729704467725</created>\r\n      <option name=\"number\" value=\"00052\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00052\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1729704467725</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"53\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <ignored-roots>\r\n      <path value=\"$PROJECT_DIR$/..\" />\r\n    </ignored-roots>\r\n    <MESSAGE value=\"commit\" />\r\n    <MESSAGE value=\"README.md\" />\r\n    <MESSAGE value=\"COMMIT\" />\r\n    <MESSAGE value=\"Modify\" />\r\n    <MESSAGE value=\"UPDATE README\" />\r\n    <MESSAGE value=\"Added GUI\" />\r\n    <MESSAGE value=\"Removed GUI\" />\r\n    <MESSAGE value=\"Replaced delimiter with &quot; | &quot;\" />\r\n    <MESSAGE value=\"Deleted UI\" />\r\n    <MESSAGE value=\"Updated readme\" />\r\n    <MESSAGE value=\"Handling cancel order, status request\" />\r\n    <MESSAGE value=\"Error handling, custom tag definition\" />\r\n    <MESSAGE value=\"updates\" />\r\n    <MESSAGE value=\"Added comments as reminders for modification.\" />\r\n    <MESSAGE value=\"Modification\" />\r\n    <MESSAGE value=\"Modifications\" />\r\n    <MESSAGE value=\"Modified market subscription functionality\" />\r\n    <MESSAGE value=\"Added heartbeat logging\" />\r\n    <MESSAGE value=\"set reconnect interval to 60 seconds\" />\r\n    <MESSAGE value=\"Subscription functionality fixed.\" />\r\n    <MESSAGE value=\"Added 4 types of market order.\" />\r\n    <MESSAGE value=\"modifications\" />\r\n    <MESSAGE value=\"Implemented new UI.\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"Implemented new UI.\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision fb0da841eed25d4625052d52f4619ee67aaf6696)
++++ b/.idea/workspace.xml	(date 1729787106665)
+@@ -4,13 +4,11 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Implemented new UI.">
++    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="Formated FIX messages.">
++      <change afterPath="$PROJECT_DIR$/static/styles.css" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/Client.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/Market_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/Market_maker.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/fastapi_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/fastapi_app.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/static/Fix_UI.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/index.html" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -73,7 +71,7 @@
+     "Python.FIX_UI.executor": "Run",
+     "Python.Market_maker.executor": "Debug",
+     "Python.fastapi_app.executor": "Run",
+-    "Python.main.executor": "Debug",
++    "Python.main.executor": "Run",
+     "RunOnceActivity.ShowReadmeOnStart": "true",
+     "git-widget-placeholder": "Data__1",
+     "last_opened_file_path": "D:/Fix_UI",
+@@ -134,14 +132,6 @@
+       <option name="number" value="Default" />
+       <option name="presentableId" value="Default" />
+       <updated>1725638129426</updated>
+-    </task>
+-    <task id="LOCAL-00004" summary="commit">
+-      <option name="closed" value="true" />
+-      <created>1725872498129</created>
+-      <option name="number" value="00004" />
+-      <option name="presentableId" value="LOCAL-00004" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1725872498129</updated>
+     </task>
+     <task id="LOCAL-00005" summary="README.md">
+       <option name="closed" value="true" />
+@@ -527,7 +517,15 @@
+       <option name="project" value="LOCAL" />
+       <updated>1729704467725</updated>
+     </task>
+-    <option name="localTasksCounter" value="53" />
++    <task id="LOCAL-00053" summary="Formated FIX messages.">
++      <option name="closed" value="true" />
++      <created>1729783535167</created>
++      <option name="number" value="00053" />
++      <option name="presentableId" value="LOCAL-00053" />
++      <option name="project" value="LOCAL" />
++      <updated>1729783535167</updated>
++    </task>
++    <option name="localTasksCounter" value="54" />
+     <servers />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+@@ -568,6 +566,7 @@
+     <MESSAGE value="Added 4 types of market order." />
+     <MESSAGE value="modifications" />
+     <MESSAGE value="Implemented new UI." />
+-    <option name="LAST_COMMIT_MESSAGE" value="Implemented new UI." />
++    <MESSAGE value="Formated FIX messages." />
++    <option name="LAST_COMMIT_MESSAGE" value="Formated FIX messages." />
+   </component>
+ </project>
+\ No newline at end of file

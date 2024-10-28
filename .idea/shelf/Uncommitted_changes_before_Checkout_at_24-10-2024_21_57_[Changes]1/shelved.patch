@@ -1,0 +1,53 @@
+Index: static/index.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\r\n<html>\r\n<head>\r\n    <title>FIX Trading Interface</title>\r\n    <link href=\"https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css\" rel=\"stylesheet\">\r\n</head>\r\n<body class=\"bg-gray-900\">\r\n    <div id=\"root\"></div>\r\n    <script src=\"/static/Fix_UI.js\"></script>\r\n</body>\r\n</html>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/static/index.html b/static/index.html
+--- a/static/index.html	(revision fb0da841eed25d4625052d52f4619ee67aaf6696)
++++ b/static/index.html	(date 1729787126081)
+@@ -3,6 +3,42 @@
+ <head>
+     <title>FIX Trading Interface</title>
+     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
++    <style>
++        /* Custom styles for the message tables */
++        .message-table {
++            width: 100%;
++            border-spacing: 0;
++        }
++        .message-table td,
++        .message-table th {
++            padding: 0.5rem;
++            text-align: left;
++        }
++        .message-row:hover {
++            background-color: rgba(55, 65, 81, 0.5);
++        }
++        .message-content {
++            max-width: 0;
++            overflow: hidden;
++            text-overflow: ellipsis;
++            white-space: nowrap;
++        }
++        .tooltip-content {
++            display: none;
++            white-space: pre-wrap;
++            word-break: break-all;
++        }
++        .message-row:hover .tooltip-content {
++            display: block;
++            position: absolute;
++            background-color: #374151;
++            padding: 0.5rem;
++            border-radius: 0.25rem;
++            z-index: 50;
++            max-width: 600px;
++            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
++        }
++    </style>
+ </head>
+ <body class="bg-gray-900">
+     <div id="root"></div>
