@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="added logging files.">
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="logging events and messages.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" afterDir="false" />
@@ -79,7 +80,7 @@
     "Python.fastapi_app.executor": "Run",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Data__2",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "D:/Fix_UI",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
@@ -136,14 +137,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00009" summary="Modify">
-      <option name="closed" value="true" />
-      <created>1725900152495</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1725900152495</updated>
     </task>
     <task id="LOCAL-00010" summary="Modify">
       <option name="closed" value="true" />
@@ -529,7 +522,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730128452999</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="logging events and messages.">
+      <option name="closed" value="true" />
+      <created>1730128791716</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1730128791716</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -547,7 +548,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/.." />
     </ignored-roots>
-    <MESSAGE value="README.md" />
     <MESSAGE value="COMMIT" />
     <MESSAGE value="Modify" />
     <MESSAGE value="UPDATE README" />
@@ -572,6 +572,7 @@
     <MESSAGE value="Readability improved." />
     <MESSAGE value="modifications." />
     <MESSAGE value="added logging files." />
-    <option name="LAST_COMMIT_MESSAGE" value="added logging files." />
+    <MESSAGE value="logging events and messages." />
+    <option name="LAST_COMMIT_MESSAGE" value="logging events and messages." />
   </component>
 </project>
