@@ -4,6 +4,9 @@ import threading
 import logging
 import time
 import quickfix as fix
+import os
+import shutil
+from datetime import datetime
 from contextlib import asynccontextmanager
 from Market_maker import MarketMaker
 from Client import Client
@@ -12,6 +15,8 @@ import signal
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+#Save session data
 
 
 class GlobalState:
@@ -60,12 +65,22 @@ def market_maker_message_handler(prefix, message):
 
 def run_market_maker():
     try:
+        # Ensure storage is properly set up
+
+
+        settings = fix.SessionSettings("server.cfg")
         market_maker = MarketMaker()
+        store_factory = fix.FileStoreFactory(settings)
+        log_factory = fix.ScreenLogFactory(settings)
         market_maker.format_and_print_message = market_maker_message_handler
         state.market_maker = market_maker
 
-        # Start MarketMaker
-        market_maker.start()
+        acceptor = fix.SocketAcceptor(market_maker, store_factory, settings, log_factory)
+        acceptor.start()
+
+        while state.running:
+            time.sleep(1)
+
     except Exception as e:
         logger.error(f"Error in market maker thread: {e}")
     finally:
@@ -74,18 +89,16 @@ def run_market_maker():
 
 def run_client():
     try:
+        settings = fix.SessionSettings("client.cfg")
         client = Client()
+        store_factory = fix.FileStoreFactory(settings)
+        log_factory = fix.ScreenLogFactory(settings)
         client.format_and_print_message = client_message_handler
         state.client = client
 
-        # Start Client
-        settings = fix.SessionSettings("client.cfg")
-        store_factory = fix.FileStoreFactory(settings)
-        log_factory = fix.ScreenLogFactory(settings)
         state.initiator = fix.SocketInitiator(client, store_factory, settings, log_factory)
         state.initiator.start()
 
-        # Keep the thread alive
         while state.running:
             time.sleep(1)
     except Exception as e:

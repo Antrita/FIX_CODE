@@ -10,6 +10,99 @@ import quickfix as fix
 import quickfix44 as fix44
 import random
 from datetime import datetime
+import os
+
+
+
+class MessageLogger:
+    def __init__(self, name):
+        self.name = name
+        self.log_dir = f"logs/{name.lower()}"
+        self.ensure_log_directories()
+
+    def ensure_log_directories(self):
+        """Ensure log directories exist"""
+        os.makedirs(self.log_dir, exist_ok=True)
+        for log_type in ['session', 'messages', 'events']:
+            os.makedirs(f"{self.log_dir}/{log_type}", exist_ok=True)
+
+    def log_session(self, event_type, details):
+        """Log session events"""
+        timestamp = datetime.now().strftime('%Y%m%d-%H:%M:%S.%f')
+        log_file = f"{self.log_dir}/session/sessions.log"
+
+        with open(log_file, 'a') as f:
+            f.write(f"{timestamp} : {event_type} : {details}\n")
+
+    def log_message(self, direction, message, parsed_content=None):
+        """Log FIX messages with parsed content"""
+        timestamp = datetime.now().strftime('%Y%m%d-%H:%M:%S.%f')
+        log_file = f"{self.log_dir}/messages/{direction}.log"
+
+        msg_type = self.get_message_type(message)
+        formatted_msg = message.toString().replace(chr(1), ' | ')
+
+        with open(log_file, 'a') as f:
+            f.write(f"{timestamp} : {msg_type} : {formatted_msg}\n")
+            if parsed_content:
+                f.write(f"Parsed Content: {parsed_content}\n")
+            f.write("-" * 80 + "\n")
+
+    def log_event(self, event_type, details):
+        """Log business events"""
+        timestamp = datetime.now().strftime('%Y%m%d-%H:%M:%S.%f')
+        log_file = f"{self.log_dir}/events/events.log"
+
+        with open(log_file, 'a') as f:
+            f.write(f"{timestamp} : {event_type} : {details}\n")
+
+    def get_message_type(self, message):
+        """Extract message type from FIX message"""
+        try:
+            msg_type = fix.MsgType()
+            message.getHeader().getField(msg_type)
+            return msg_type.getValue()
+        except:
+            return "UNKNOWN"
+
+    def parse_message_content(self, message):
+        """Parse important fields from FIX message"""
+        try:
+            parsed = {}
+
+            # Common fields
+            if message.isSetField(fix.ClOrdID()):
+                cl_ord_id = fix.ClOrdID()
+                message.getField(cl_ord_id)
+                parsed['ClOrdID'] = cl_ord_id.getValue()
+
+            if message.isSetField(fix.OrderID()):
+                order_id = fix.OrderID()
+                message.getField(order_id)
+                parsed['OrderID'] = order_id.getValue()
+
+            if message.isSetField(fix.Symbol()):
+                symbol = fix.Symbol()
+                message.getField(symbol)
+                parsed['Symbol'] = symbol.getValue()
+
+            # Add more fields based on message type
+            msg_type = self.get_message_type(message)
+            if msg_type == fix.MsgType_ExecutionReport:
+                if message.isSetField(fix.ExecType()):
+                    exec_type = fix.ExecType()
+                    message.getField(exec_type)
+                    parsed['ExecType'] = exec_type.getValue()
+
+            elif msg_type == fix.MsgType_MarketDataSnapshotFullRefresh:
+                if message.isSetField(fix.MDReqID()):
+                    md_req_id = fix.MDReqID()
+                    message.getField(md_req_id)
+                    parsed['MDReqID'] = md_req_id.getValue()
+
+            return parsed
+        except Exception as e:
+            return {'error': str(e)}
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
@@ -21,20 +114,26 @@ class Client(fix.Application):
         self.session_id = None
         self.md_req_id = None
         self.last_heartbeat_time = None #set heartbt time
+        self.logger = MessageLogger(self.__class__.__name__)
 
     def onCreate(self, session_id):
         self.session_id = session_id
+        self.logger.log_session("Created", f"Session ID: {session_id}")
         print(f"Session created - {session_id}")
 
     def onLogon(self, session_id):
         self.session_id = session_id
         print(f"Logon - {session_id}")
+        self.logger.log_session("Logon", f"Session ID: {session_id}")
         print("Client logged on and ready to send requests.")
 
     def onLogout(self, session_id):
+        self.logger.log_session("Logout", f"Session ID: {session_id}")
         print(f"Logout - {session_id}")
 
     def toAdmin(self, message, session_id):
+        parsed = self.logger.parse_message_content(message)
+        self.logger.log_message("outgoing_admin", message, parsed)
         msgType = fix.MsgType()
         message.getHeader().getField(msgType)
 
@@ -44,6 +143,8 @@ class Client(fix.Application):
         self.format_and_print_message("Sending admin", message)
 
     def fromAdmin(self, message, session_id):
+        parsed = self.logger.parse_message_content(message)
+        self.logger.log_message("incoming_admin", message, parsed)
         msgType = fix.MsgType()
         message.getHeader().getField(msgType)
 
@@ -57,6 +158,8 @@ class Client(fix.Application):
         self.format_and_print_message("Received admin", message)
 
     def toApp(self, message, session_id):
+        parsed = self.logger.parse_message_content(message)
+        self.logger.log_message("outgoing_app", message, parsed)
         self.format_and_print_message("Sending app", message)
 
     def fromApp(self, message, session_id):
@@ -87,12 +190,11 @@ class Client(fix.Application):
         except Exception as e:
             print(f" ")
 
-    '''def format_and_print_message(self, prefix, message):
-        try:
-            formatted_message = message.toString().replace(chr(1), ' | ')
-            print(f"{prefix}: {formatted_message}")
-        except Exception as e:
-            print(f"Error formatting message: {e}" '''
+        parsed = self.logger.parse_message_content(message)
+        self.logger.log_message("incoming_app", message, parsed)
+
+    def log_business_event(self, event_type, details):
+        self.logger.log_event(event_type, details)
 
     def on_execution_report(self, message):
         try:

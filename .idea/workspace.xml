@@ -6,9 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="modifications.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fastapi_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/fastapi_app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/Client.cfg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/Client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Market_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/Market_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/Server.cfg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/Fix_UI.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,14 +132,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00006" summary="README.md">
-      <option name="closed" value="true" />
-      <created>1725874341745</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1725874341745</updated>
     </task>
     <task id="LOCAL-00007" summary="COMMIT">
       <option name="closed" value="true" />
@@ -523,7 +517,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729788973055</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="modifications.">
+      <option name="closed" value="true" />
+      <created>1729868838988</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1729868838988</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
