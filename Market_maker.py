@@ -316,8 +316,9 @@ class MarketMaker(fix.Application, CustomApplication):
             if subscription_type.getValue() == fix.SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES:
                 self.subscriptions.add((md_req_id.getValue(), self.symbol_value))
                 print(f"Added subscription for {self.symbol_value} with MDReqID {md_req_id.getValue()}")
-                self.send_market_data(md_req_id.getValue(), session_id, self.symbol_value)
                 self.is_paused = False  # Unpause when subscribing
+                # Send initial market data immediately
+                self.send_market_data(md_req_id.getValue(), session_id, self.symbol_value)
             elif subscription_type.getValue() == fix.SubscriptionRequestType_DISABLE_PREVIOUS_SNAPSHOT_PLUS_UPDATE_REQUEST:
                 self.handle_unsubscription(md_req_id.getValue(), self.symbol_value)
             else:
@@ -326,12 +327,32 @@ class MarketMaker(fix.Application, CustomApplication):
         except fix.FieldNotFound as e:
             print(f"Error processing market data request: {e}")
 
-    def handle_unsubscription(self, md_req_id, symbol):
-        self.subscriptions = {sub for sub in self.subscriptions if sub[0] != md_req_id}
-        print(f"Removed subscription for {symbol} with MDReqID {md_req_id}")
-        if not self.subscriptions:
-            self.is_paused = True
-        print("Current subscriptions:", self.subscriptions)
+    def update_prices(self):
+        while self.is_running:
+            try:
+                if not self.is_paused and self.subscriptions:  # Check if there are active subscriptions
+                    # Update price
+                    self.prices[self.symbol_value] += random.uniform(-0.05, 0.05)
+                    self.prices[self.symbol_value] = max(4.0, min(self.prices[self.symbol_value], 6.0))
+
+                    # Send to all subscribers
+                    subscriptions_copy = self.subscriptions.copy()  # Create a copy to avoid modification during iteration
+                    for md_req_id, symbol in subscriptions_copy:
+                        if self.session_id:
+                            try:
+                                self.send_market_data(md_req_id, self.session_id, self.symbol_value)
+                            except fix.SessionNotFound:
+                                print(
+                                    f"Session {self.session_id} not found. Removing subscription for {self.symbol_value}")
+                                self.subscriptions.remove((md_req_id, self.symbol_value))
+                            except Exception as e:
+                                print(f"Error sending market data: {e}")
+                                continue
+
+                time.sleep(1)  # Reduced sleep time for more frequent updates
+            except Exception as e:
+                print(f"Error in update_prices: {e}")
+                time.sleep(1)
 
     def send_market_data(self, md_req_id, session_id, symbol_value):
         if symbol_value not in self.prices:
@@ -389,29 +410,6 @@ class MarketMaker(fix.Application, CustomApplication):
             reject.setField(fix.Text("Unknown order"))
 
             fix.Session.sendToTarget(reject, session_id)
-
-    def update_prices(self):
-        while self.is_running:
-            try:
-                if not self.is_paused:  # Only update and send data if not paused
-                    self.prices[self.symbol_value] += random.uniform(-0.05, 0.05)
-                    self.prices[self.symbol_value] = max(4.0, min(self.prices[self.symbol_value], 6.0))
-
-                    for md_req_id, symbol in list(self.subscriptions):
-                        if symbol == self.symbol_value and self.session_id:
-                            try:
-                                self.send_market_data(md_req_id, self.session_id, self.symbol_value)
-                            except fix.SessionNotFound:
-                                print(
-                                    f"Session {self.session_id} not found. Removing subscription for {self.symbol_value}")
-                                self.subscriptions.remove((md_req_id, self.symbol_value))
-                            except Exception as e:
-                                print(f"Error sending market data for {self.symbol_value}: {e}")
-
-                time.sleep(2)  # Reduced sleep time for more frequent updates
-            except Exception as e:
-                print(f"Error in update_prices: {e}")
-                time.sleep(1)
 
     def start(self):
         try:
