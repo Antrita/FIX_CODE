@@ -39,11 +39,22 @@ def client_message_handler(prefix, message):
         formatted_message = raw_message.replace(chr(1), ' | ')
         print(f"{prefix}: {formatted_message}")
 
-        if state.loop:
-            asyncio.run_coroutine_threadsafe(
-                manager.broadcast_order_update(formatted_message),
-                state.loop
-            )
+        # Get message type
+        msg_type = fix.MsgType()
+        message.getHeader().getField(msg_type)
+
+        if msg_type.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
+            if state.loop:
+                asyncio.run_coroutine_threadsafe(
+                    manager.broadcast_market_data(formatted_message),
+                    state.loop
+                )
+        else:
+            if state.loop:
+                asyncio.run_coroutine_threadsafe(
+                    manager.broadcast_order_update(formatted_message),
+                    state.loop
+                )
     except Exception as e:
         logger.error(f"Error in client message handler: {e}")
 
@@ -54,11 +65,22 @@ def market_maker_message_handler(prefix, message):
         formatted_message = raw_message.replace(chr(1), ' | ')
         print(f"{prefix}: {formatted_message}")
 
-        if state.loop:
-            asyncio.run_coroutine_threadsafe(
-                manager.broadcast_maker_output(formatted_message),
-                state.loop
-            )
+        # Get message type
+        msg_type = fix.MsgType()
+        message.getHeader().getField(msg_type)
+
+        if msg_type.getValue() == fix.MsgType_MarketDataSnapshotFullRefresh:
+            if state.loop:
+                asyncio.run_coroutine_threadsafe(
+                    manager.broadcast_market_data(formatted_message),
+                    state.loop
+                )
+        else:
+            if state.loop:
+                asyncio.run_coroutine_threadsafe(
+                    manager.broadcast_maker_output(formatted_message),
+                    state.loop
+                )
     except Exception as e:
         logger.error(f"Error in market maker message handler: {e}")
 

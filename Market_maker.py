@@ -355,8 +355,10 @@ class MarketMaker(fix.Application, CustomApplication):
         snapshot.addGroup(group)
 
         fix.Session.sendToTarget(snapshot, session_id)
-        print(f"Sent market data for {symbol_value}: Bid={self.prices[symbol_value] - 0.01}, Offer={self.prices[symbol_value] + 0.01}")
-        time.sleep(10)
+        print(
+            f"Sent market data for {symbol_value}: Bid={self.prices[symbol_value] - 0.01}, Offer={self.prices[symbol_value] + 0.01}")
+        # Remove the sleep to allow continuous updates
+        # time.sleep(10)  <- Remove this line
 
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
@@ -406,7 +408,7 @@ class MarketMaker(fix.Application, CustomApplication):
                             except Exception as e:
                                 print(f"Error sending market data for {self.symbol_value}: {e}")
 
-                time.sleep(6)
+                time.sleep(2)  # Reduced sleep time for more frequent updates
             except Exception as e:
                 print(f"Error in update_prices: {e}")
                 time.sleep(1)
