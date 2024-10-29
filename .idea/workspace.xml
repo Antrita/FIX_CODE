@@ -5,6 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="added logging files.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/Client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/Server.cfg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" afterDir="false" />
@@ -40,7 +43,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Data_1" />
+        <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -70,20 +73,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Python.Client.executor": "Run",
-    "Python.FIX_UI.executor": "Run",
-    "Python.Market_maker.executor": "Run",
-    "Python.fastapi_app.executor": "Run",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Data__2",
-    "last_opened_file_path": "D:/Fix_UI",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Python.Client.executor&quot;: &quot;Run&quot;,
+    &quot;Python.FIX_UI.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Market_maker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fastapi_app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Data__2&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Fix_UI&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\FIX_CODE\static" />
@@ -115,6 +118,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.Market_maker" />
         <item itemvalue="Python.Market_maker" />
         <item itemvalue="Python.Market_maker" />
         <item itemvalue="Python.Market_maker" />

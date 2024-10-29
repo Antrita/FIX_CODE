@@ -241,7 +241,7 @@ class Client(fix.Application):
             return str(message)
 
     def on_market_data(self, message):
-        try:
+
             symbol = "USD/BRL"
             md_req_id = fix.MDReqID()
             message.getField(md_req_id)
@@ -266,8 +266,7 @@ class Client(fix.Application):
                 print(f"  {entry_type.getValue()}: Price={price.getValue()}, "
                       f"Size={size.getValue()}")
 
-        except fix.FieldNotFound as e:
-            print(f"Error processing market data: {e}")
+
 
     def get_field_value(self, message, field):
         try:
@@ -344,21 +343,27 @@ class Client(fix.Application):
 
     def on_market_data(self, message):
         try:
-            # Format the message with delimiters first
+            # Keep raw FIX message formatting with all fields
             formatted_message = message.toString().replace(chr(1), ' | ')
             print(f"Market Data Message: {formatted_message}")
 
-            # Keep existing processing intact
-            symbol = fix.Symbol()
+            # Get and verify message type
+            msg_type = fix.MsgType()
+            message.getHeader().getField(msg_type)
+            if msg_type.getValue() != "W":  # MarketDataSnapshotFullRefresh
+                return
+
+            # Process market data
+            symbol = "USD/BRL"  # Default symbol
             md_req_id = fix.MDReqID()
-            message.getField(symbol)
             message.getField(md_req_id)
 
             no_md_entries = fix.NoMDEntries()
             message.getField(no_md_entries)
 
-            print(f"Received market data for {symbol.getValue()}, MDReqID: {md_req_id.getValue()}")
+            print(f"Received market data for {symbol}, MDReqID: {md_req_id.getValue()}")
 
+            # Process each market data entry
             for i in range(no_md_entries.getValue()):
                 group = fix44.MarketDataSnapshotFullRefresh().NoMDEntries()
                 message.getGroup(i + 1, group)
@@ -366,26 +371,18 @@ class Client(fix.Application):
                 entry_type = fix.MDEntryType()
                 price = fix.MDEntryPx()
                 size = fix.MDEntrySize()
-                date = fix.MDEntryDate()
-                time = fix.MDEntryTime()
 
                 group.getField(entry_type)
                 group.getField(price)
                 group.getField(size)
-                group.getField(date)
-                group.getField(time)
 
-                print(f"  {entry_type.getValue()}: Price={price.getValue()}, "
-                      f"Size={size.getValue()}, Date={date.getValue()}, Time={time.getValue()}")
-
-                # Format each entry with delimiters
-                entry_message = (f"NoMDEntries | MDEntryType={entry_type.getValue()} | "
-                                 f"MDEntryPx={price.getValue()} | MDEntrySize={size.getValue()} | "
-                                 f"MDEntryDate={date.getValue()} | MDEntryTime={time.getValue()}")
+                # Keep the exact FIX format for the entry message
+                print(f"  {entry_type.getValue()}: Price={price.getValue()}, Size={size.getValue()}")
+                entry_message = formatted_message
                 print(f"Entry in FIX format: {entry_message}")
 
         except fix.FieldNotFound as e:
-            print(f"Error processing market data: {e}")
+            print(f"Error processing market data field: {e}")
 
 
     def cancel_market_data(self):
