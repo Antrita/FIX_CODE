@@ -6,6 +6,17 @@
   <component name="ChangeListManager">
     <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="logging events and messages.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/outgoing_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/outgoing_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/session/sessions.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/session/sessions.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/session/sessions.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/session/sessions.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/Fix_UI.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,14 +138,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00011" summary="Modify">
-      <option name="closed" value="true" />
-      <created>1726065829509</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1726065829509</updated>
     </task>
     <task id="LOCAL-00012" summary="Modify">
       <option name="closed" value="true" />
@@ -520,7 +523,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730129318023</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="logging events and messages.">
+      <option name="closed" value="true" />
+      <created>1730129712751</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1730129712751</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

@@ -44,15 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="maker-output" class="bg-gray-900 p-2 rounded h-96 overflow-y-auto font-mono text-sm">
     </div>
 </div>
-
-<!-- Market Data Section (moved under Market Maker) -->
-<div class="p-4 bg-gray-800 text-white rounded-lg mt-4">
-    <h2 class="text-xl font-bold mb-4">Market Data</h2>
-    <div id="market-data" class="bg-gray-900 p-2 rounded h-48 overflow-y-auto font-mono text-xs">
-    </div>
 </div>
-            </div>
-        </div>
+     </div>
+     </div>
     `;
 
     // Get UI elements
