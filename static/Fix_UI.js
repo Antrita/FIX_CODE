@@ -10,44 +10,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create UI elements
     const app = document.getElementById('root');
     app.innerHTML = `
-        <div class="p-4 bg-gray-900 min-h-screen">
-            <div class="mb-4 text-white">
-                <h1 class="text-2xl font-bold mb-2">FIX Trading Interface</h1>
-                <div id="status-indicator" class="inline-block px-3 py-1 rounded bg-red-500">
-                    ${status}
+    <div class="p-4 bg-gray-900 min-h-screen flex flex-col items-center">
+        <div class="w-full max-w-7xl mx-auto mb-6 text-center">
+            <h1 class="text-3xl font-bold mb-4 text-white">FIX Trading Interface</h1>
+            <div id="status-indicator" class="inline-block px-4 py-2 rounded bg-red-500">
+                ${status}
+            </div>
+        </div>
+        <div class="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Client Section -->
+            <div class="p-6 bg-gray-800 text-white rounded-lg">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <span class="mr-2">📱</span> Client Terminal
+                </h2>
+                <form id="command-form" class="mb-4">
+                    <input
+                        type="text"
+                        id="command-input"
+                        placeholder="Enter command (e.g., buy USD/BRL 100)"
+                        class="w-full p-3 bg-gray-700 rounded border border-gray-600 text-white focus:border-blue-500 focus:outline-none"
+                    />
+                </form>
+                <div id="order-history" class="bg-gray-900 p-4 rounded h-64 overflow-y-auto">
                 </div>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Client Section -->
-                <div class="space-y-4">
-                    <div class="p-4 bg-gray-800 text-white rounded-lg">
-                        <h2 class="text-xl font-bold mb-4 flex items-center">
-                            <span class="mr-2">📱</span> Client Terminal
-                        </h2>
-                        <form id="command-form" class="mb-4">
-                            <input
-                                type="text"
-                                id="command-input"
-                                placeholder="Enter command (e.g., buy USD/BRL 100)"
-                                class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white"
-                            />
-                        </form>
-                        <div id="order-history" class="bg-gray-900 p-2 rounded h-48 overflow-y-auto">
-                        </div>
-                    </div>
-
-
-
-               <div class="p-4 bg-gray-800 text-white rounded-lg">
-    <h2 class="text-xl font-bold mb-4">Market Maker Output</h2>
-    <div id="maker-output" class="bg-gray-900 p-2 rounded h-96 overflow-y-auto font-mono text-sm">
+            <!-- Market Maker Section -->
+            <div class="p-6 bg-gray-800 text-white rounded-lg">
+                <h2 class="text-xl font-bold mb-4">Market Maker Output</h2>
+                <div id="maker-output" class="bg-gray-900 p-4 rounded h-[calc(100vh-24rem)] overflow-y-auto font-mono text-sm">
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-</div>
-     </div>
-     </div>
-    `;
+`;
 
     // Get UI elements
     const statusIndicator = document.getElementById('status-indicator');

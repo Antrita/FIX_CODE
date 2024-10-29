@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="logging events and messages.">
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="simplified UI.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" afterDir="false" />
@@ -16,7 +16,6 @@
       <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_admin.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/marketmaker/session/sessions.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/session/sessions.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/Fix_UI.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/Fix_UI.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,7 +41,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Data_1" />
+        <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -72,20 +71,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Python.Client.executor&quot;: &quot;Run&quot;,
-    &quot;Python.FIX_UI.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Market_maker.executor&quot;: &quot;Run&quot;,
-    &quot;Python.fastapi_app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Fix_UI&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Python.Client.executor": "Run",
+    "Python.FIX_UI.executor": "Run",
+    "Python.Market_maker.executor": "Run",
+    "Python.fastapi_app.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "temp",
+    "last_opened_file_path": "D:/Fix_UI",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\FIX_CODE\static" />
@@ -138,14 +137,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00012" summary="Modify">
-      <option name="closed" value="true" />
-      <created>1726066153574</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1726066153574</updated>
     </task>
     <task id="LOCAL-00013" summary="Modify">
       <option name="closed" value="true" />
@@ -531,7 +522,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730129712751</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="simplified UI.">
+      <option name="closed" value="true" />
+      <created>1730180435699</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1730180435700</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -549,7 +548,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/.." />
     </ignored-roots>
-    <MESSAGE value="COMMIT" />
     <MESSAGE value="Modify" />
     <MESSAGE value="UPDATE README" />
     <MESSAGE value="Added GUI" />
@@ -574,6 +572,7 @@
     <MESSAGE value="modifications." />
     <MESSAGE value="added logging files." />
     <MESSAGE value="logging events and messages." />
-    <option name="LAST_COMMIT_MESSAGE" value="logging events and messages." />
+    <MESSAGE value="simplified UI." />
+    <option name="LAST_COMMIT_MESSAGE" value="simplified UI." />
   </component>
 </project>
