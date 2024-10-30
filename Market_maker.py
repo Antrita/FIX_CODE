@@ -349,10 +349,10 @@ class MarketMaker(fix.Application, CustomApplication):
                                 print(f"Error sending market data: {e}")
                                 continue
 
-                time.sleep(1)  # Reduced sleep time for more frequent updates
+                time.sleep(10)  # Reduced sleep time for more frequent updates
             except Exception as e:
                 print(f"Error in update_prices: {e}")
-                time.sleep(6)
+                time.sleep(3)
 
     def send_market_data(self, md_req_id, session_id, symbol_value):
         if symbol_value not in self.prices:
