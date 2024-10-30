@@ -1,5 +1,5 @@
 
-# Simple FIX Simulator with Python and QuickFIX
+# FIX Simulator with Python and QuickFIX
 
 This repository contains a simple implementation of a FIX (Financial Information eXchange) simulator using Python and the QuickFIX library. The simulator is designed to demonstrate the basic functionality of a market maker application.
 
