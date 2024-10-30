@@ -45,7 +45,7 @@ A simple menu is displayed after the FIX application has started. You can use th
 - status -> Order Status Request
 - quit -> Logout and Exit
 
-  ## GUI Menu
+## GUI Menu
 ### Users can now place orders using commands in the form:
  [side-buy/sell] [USD/BRL] [qty] [amount] 
 
