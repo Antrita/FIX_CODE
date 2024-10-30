@@ -47,7 +47,7 @@ A simple menu is displayed after the FIX application has started. You can use th
 
   ## GUI Menu
 ### Users can now place orders using commands in the form:
-Syntax: [side-buy/sell] [USD/BRL] [qty] [amount]
+* [side-buy/sell] [USD/BRL] [qty] [amount] *
 
 
 
