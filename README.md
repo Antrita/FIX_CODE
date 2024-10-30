@@ -79,8 +79,8 @@ A simple menu is displayed after the FIX application has started. You can use th
 - buy USD/BRL 100  1.10  
 - sell USD/BRL 100 limit 1.10 
 - buy USD/BRL 100 stop 1.05 1.00
-- buy USD/BRL 100 stop_limit 2.4 2.3 [stop price > limit price for buy]
-- sell USD/BRL 100 stop_limit 2.3 2.4[stop price < limit price for sell]
+- buy USD/BRL 100 stop_limit 2.4 2.3    [stop price > limit price for buy]
+- sell USD/BRL 100 stop_limit 2.3 2.4   [stop price < limit price for sell]
 
 Enter the corresponding command or action to perform the desired operation.
 
