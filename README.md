@@ -47,9 +47,7 @@ A simple menu is displayed after the FIX application has started. You can use th
 
   ## GUI Menu
 ### Users can now place orders using commands in the form:
-* [side-buy/sell] [USD/BRL] [qty] [amount] *
-
-
+ [side-buy/sell] [USD/BRL] [qty] [amount] 
 
 
 
@@ -57,13 +55,14 @@ A simple menu is displayed after the FIX application has started. You can use th
 ## EXAMPLES
 
 ### Users can now enter commands like:
-( For buy/sell, quantitiy is added seperately in the CLI Version)
+( For buy/sell, price can also be added seperately in the CLI Version for regular market orders)
 
-- buy 55 EUR/USD 38
-- sell 55 USD/JPY 38
-- subscribe 55 GBP/USD
-- cancel 41 [CLOrdID]
-- status 11 [OrigCLOrdID]
+- buy USD/BRL 100  1.10  
+- sell USD/BRL 100 limit 
+- buy USD/BRL 100 stop  
+- sell USD/BRL 100 stop_limit 1.10  
+- buy USD/BRL 100 stop_limit 2.4 2.3
+- sell USD/BRL 100 stop_limit 2.3 2.4
 
 Enter the corresponding command or action to perform the desired operation.
 
