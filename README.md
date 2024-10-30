@@ -33,7 +33,7 @@ Along with the regular market orders placed by users in the format: [side] [USD/
 
 
 
-## CLI Menu
+## CLI Menu Commands
 
 A simple menu is displayed after the FIX application has started. You can use this menu to perform various actions in the CLI version (Market Maker and Client):
 
@@ -45,40 +45,31 @@ A simple menu is displayed after the FIX application has started. You can use th
 - status -> Order Status Request
 - quit -> Logout and Exit
 
-## GUI Menu
+## GUI Menu Commands
 ### Users can now place orders using commands in the form:
- [side-buy/sell] [USD/BRL] [qty] [amount] 
+ [side: buy/sell] [USD/BRL] [qty] [amount] 
 
 
 
 ### Conditions for stop, limit, stop_limit  execution
-1. Stop order:
-2. Stop price must be provided and it must be greater than or equal to the current market price.
-3. Limit order:
-4. Price must be provided and it must be less than or equal to the current market price.
-5. Stop-limit order:
-6. Stop price and price must be provided and it must be less than or equal to the current market price and greater than or equal to the stop price.
-4.Market orders:
-users can place orders normally.
+**1.Stop order:** Stop price must be provided and it must be greater than or equal to the current market price.
+**2.Limit order:** Price must be provided and it must be less than or equal to the current market price.
+**3.Stop-limit order:** Stop price and limit price must be provided and it must be less than or equal to the current market price and greater than or equal to the stop price.
+**4.Market orders:** users can place orders normally.
 
 ### Buying and selling rules for stop, limit and stop_limit orders:
-1.buying in stop orders: 
-Stop price must be provided and it must be greater than or equal to  current market price provided first.
 
-2. selling in stop orders: 
-Stop price must be provided and it must be less than or equal to the current market price provided first.
+**Buying in stop orders:** Stop price must be provided and it must be greater than or equal to  current market price provided first.
 
-4. buying in limit orders: 
-Price must be provided and it must be less than or equal to the current market price provided first.
+**Selling in stop orders:** Stop price must be provided and it must be less than or equal to the current market price provided first.
 
-6. selling in limit orders: 
-Price must be provided and it must be greater than or equal to the current market price provided first.
+**Buying in limit orders:** Price must be provided and it must be less than or equal to the current market price provided first.
 
-8. buying in stop_limit orders: 
-Stop price and price must be provided and it must be less than or equal to the current market price provided first, and greater than or equal to the stop price provided.
+**Selling in limit orders:** Price must be provided and it must be greater than or equal to the current market price provided first.
 
-10. selling in stop_limit orders: 
-Stop price and price must be provided and it must be greater than or equal to the current market price provided first, and less than or equal to the stop price provided.
+**Buying in stop_limit orders:** Stop price and price must be provided and it must be less than or equal to the current market price provided first, and greater than or equal to the stop price provided.
+
+**Selling in stop_limit orders:** Stop price and price must be provided and it must be greater than or equal to the current market price provided first, and less than or equal to the stop price provided.
    
 ## EXAMPLES
 
