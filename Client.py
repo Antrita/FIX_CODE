@@ -3,7 +3,8 @@
 buy USD/BRL 100 (Market order)
 sell USD/BRL 100 limit (Limit order)
 buy USD/BRL 100 stop  (Stop order)
-sell USD/BRL 100 stop_limit 1.10  (Stop-limit order)'''
+sell USD/BRL 100 stop_limit 1.10  (Stop-limit order)
+buy USD/BRL 100 stop_limit 1.2 2.3'''
 
 import sys
 import quickfix as fix

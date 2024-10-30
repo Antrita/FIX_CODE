@@ -336,7 +336,7 @@ class MarketMaker(fix.Application, CustomApplication):
                     self.prices[self.symbol_value] = max(4.0, min(self.prices[self.symbol_value], 6.0))
 
                     # Send to all subscribers
-                    subscriptions_copy = self.subscriptions.copy()  # Create a copy to avoid modification during iteration
+                    subscriptions_copy = self.subscriptions.copy()
                     for md_req_id, symbol in subscriptions_copy:
                         if self.session_id:
                             try:
@@ -349,7 +349,7 @@ class MarketMaker(fix.Application, CustomApplication):
                                 print(f"Error sending market data: {e}")
                                 continue
 
-                time.sleep(10)  # Reduced sleep time for more frequent updates
+                time.sleep(10)
             except Exception as e:
                 print(f"Error in update_prices: {e}")
                 time.sleep(3)
@@ -378,8 +378,8 @@ class MarketMaker(fix.Application, CustomApplication):
         fix.Session.sendToTarget(snapshot, session_id)
         print(
             f"Sent market data for {symbol_value}: Bid={self.prices[symbol_value] - 0.01}, Offer={self.prices[symbol_value] + 0.01}")
-        # Remove the sleep to allow continuous updates
-        # time.sleep(10)  <- Remove this line
+
+        time.sleep(2)
 
     def handle_order_status_request(self, message, session_id):
         clOrdID = fix.ClOrdID()
