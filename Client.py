@@ -67,11 +67,9 @@ class MessageLogger:
             return "UNKNOWN"
 
     def parse_message_content(self, message):
-        """Parse important fields from FIX message"""
+
         try:
             parsed = {}
-
-            # Common fields
             if message.isSetField(fix.ClOrdID()):
                 cl_ord_id = fix.ClOrdID()
                 message.getField(cl_ord_id)
@@ -87,7 +85,7 @@ class MessageLogger:
                 message.getField(symbol)
                 parsed['Symbol'] = symbol.getValue()
 
-            # Add more fields based on message type
+            #fields based on message type
             msg_type = self.get_message_type(message)
             if msg_type == fix.MsgType_ExecutionReport:
                 if message.isSetField(fix.ExecType()):
@@ -107,7 +105,6 @@ class MessageLogger:
 
 def gen_order_id():
     return str(random.randint(100000, 999999))
-
 
 class Client(fix.Application):
     def __init__(self):
@@ -168,7 +165,6 @@ class Client(fix.Application):
             msgType = fix.MsgType()
             message.getHeader().getField(msgType)
 
-
             symbol_required_types = [fix.MsgType_ExecutionReport, fix.MsgType_OrderCancelReject,
                                      fix.MsgType_MarketDataSnapshotFullRefresh]
             if msgType.getValue() in symbol_required_types:
@@ -205,7 +201,6 @@ class Client(fix.Application):
             cl_ord_id = self.get_field_value(message, fix.ClOrdID())
             order_id = self.get_field_value(message, fix.OrderID())
             symbol = self.get_field_value(message, fix.Symbol())
-
             print(
                 f"Execution Report - ClOrdID: {cl_ord_id}, OrderID: {order_id}, Symbol: {symbol}, ExecType: {exec_type.getValue()}")
 
@@ -266,8 +261,6 @@ class Client(fix.Application):
 
                 print(f"  {entry_type.getValue()}: Price={price.getValue()}, "
                       f"Size={size.getValue()}")
-
-
 
     def get_field_value(self, message, field):
         try:
