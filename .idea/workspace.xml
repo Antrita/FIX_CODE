@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="modified" />
+    <list default="true" id="4df9f1aa-a593-4f4f-af94-ec8cc4a50fa1" name="Changes" comment="modifications">
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/incoming_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/outgoing_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/messages/outgoing_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/messages/outgoing_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/client/session/sessions.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/client/session/sessions.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/incoming_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_admin.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_admin.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/messages/outgoing_app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/marketmaker/session/sessions.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/marketmaker/session/sessions.log" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -126,30 +137,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1725638129426</updated>
-    </task>
-    <task id="LOCAL-00012" summary="Modify">
-      <option name="closed" value="true" />
-      <created>1726066153574</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1726066153574</updated>
-    </task>
-    <task id="LOCAL-00013" summary="Modify">
-      <option name="closed" value="true" />
-      <created>1726066189375</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1726066189375</updated>
-    </task>
-    <task id="LOCAL-00014" summary="UPDATE README">
-      <option name="closed" value="true" />
-      <created>1726067016108</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1726067016108</updated>
     </task>
     <task id="LOCAL-00015" summary="UPDATE README">
       <option name="closed" value="true" />
@@ -519,7 +506,31 @@
       <option name="project" value="LOCAL" />
       <updated>1730220269526</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="modifications">
+      <option name="closed" value="true" />
+      <created>1730261310016</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1730261310017</updated>
+    </task>
+    <task id="LOCAL-00062" summary="modifications">
+      <option name="closed" value="true" />
+      <created>1730261357645</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1730261357645</updated>
+    </task>
+    <task id="LOCAL-00063" summary="modifications">
+      <option name="closed" value="true" />
+      <created>1730261515097</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1730261515097</updated>
+    </task>
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -556,12 +567,12 @@
     <MESSAGE value="set reconnect interval to 60 seconds" />
     <MESSAGE value="Subscription functionality fixed." />
     <MESSAGE value="Added 4 types of market order." />
-    <MESSAGE value="modifications" />
     <MESSAGE value="Formated FIX messages." />
     <MESSAGE value="Readability improved." />
     <MESSAGE value="modifications." />
     <MESSAGE value="added logging files." />
     <MESSAGE value="modified" />
-    <option name="LAST_COMMIT_MESSAGE" value="modified" />
+    <MESSAGE value="modifications" />
+    <option name="LAST_COMMIT_MESSAGE" value="modifications" />
   </component>
 </project>
