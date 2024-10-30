@@ -1,6 +1,7 @@
-'''Users can now place orders using commands like:
+'''Users can now place orders using commands in the form:
+Syntax: [side] [USD/BRL] [qty] [amount]
 
-buy USD/BRL 100 (Market order)
+buy USD/BRL 100  1.10 (Market order)
 sell USD/BRL 100 limit (Limit order)
 buy USD/BRL 100 stop  (Stop order)
 sell USD/BRL 100 stop_limit 1.10  (Stop-limit order)
