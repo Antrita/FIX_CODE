@@ -51,7 +51,19 @@ A simple menu is displayed after the FIX application has started. You can use th
 
 
 
-
+### Conditions for stop, limit, stop_limit  execution
+1. Stop order: Stop price must be provided and it must be greater than or equal to the current market price.
+2. Limit order: Price must be provided and it must be less than or equal to the current market price.
+3. Stop-limit order: Stop price and price must be provided and it must be less than or equal to the current market price and greater than or equal to the stop price.
+4.Market orders: users can place orders normally.
+Buying and selling rules for stop, limit and stop_limit orders:
+1.buying in stop orders: Stop price must be provided and it must be greater than or equal to  current market price provided first.
+2. selling in stop orders: Stop price must be provided and it must be less than or equal to the current market price provided first.
+3. buying in limit orders: Price must be provided and it must be less than or equal to the current market price provided first.
+4. selling in limit orders: Price must be provided and it must be greater than or equal to the current market price provided first.
+5. buying in stop_limit orders: Stop price and price must be provided and it must be less than or equal to the current market price provided first, and greater than or equal to the stop price provided.
+6. selling in stop_limit orders: Stop price and price must be provided and it must be greater than or equal to the current market price provided first, and less than or equal to the stop price provided.
+7. 
 ## EXAMPLES
 
 ### Users can now enter commands like:
