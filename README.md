@@ -19,7 +19,7 @@ The provided code is a basic market maker application that can handle various FI
 python market_maker.py
 python client.py
 ```
-6.Run the main.py to work with the GUI version:
+6. Run the main.py to work with the GUI version:
 ```bash
 python main.py
 ```
@@ -53,6 +53,11 @@ A simple menu is displayed after the FIX application has started. You can use th
 
 ### Conditions for stop, limit, stop_limit  execution
 **1.Stop order:** Stop price must be provided and it must be greater than or equal to the current market price.
+
+**Example**
+```bash
+buy 100 USD/BRL 1.5 1.0
+```
 **2.Limit order:** Price must be provided and it must be less than or equal to the current market price.
 **3.Stop-limit order:** Stop price and limit price must be provided and it must be less than or equal to the current market price and greater than or equal to the stop price.
 **4.Market orders:** users can place orders normally.
