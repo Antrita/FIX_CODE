@@ -56,7 +56,7 @@ A simple menu is displayed after the FIX application has started. You can use th
 
 **Example**
 ```bash
-buy  USD/BRL 100 stop 1.5 
+buy  USD/BRL 100 stopPrice 1.5 
 ```
 **2.Limit order:** Price must be provided and it must be less than or equal to the current market price.
 
@@ -78,12 +78,7 @@ sell USD/BRL 100 stop_limit 1.2 1.05
 **Example**
 ```bash
 buy USD/BRL 100 5.10
-```
-**Stop orders:** Stop trigger must be higher than current market price for buy and less than the market price for sell.
 
-**Example**
-```bash
-buy USD/BRL 100 stopPrice 1.5 
 ```
 ### Buying and selling rules for stop, limit and stop_limit orders:
 
