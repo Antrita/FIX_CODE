@@ -79,7 +79,12 @@ sell USD/BRL 100 stop_limit 1.2 1.05
 ```bash
 buy USD/BRL 100 5.10
 ```
+**Stop orders:** Stop trigger must be higher than current market price for buy and less than the market price for sell.
 
+**Example**
+```bash
+buy USD/BRL 100 stopPrice 1.5 
+```
 ### Buying and selling rules for stop, limit and stop_limit orders:
 
 **Buying in stop orders:** Stop price must be provided and it must be greater than or equal to  current market price provided first.
