@@ -56,7 +56,10 @@ A simple menu is displayed after the FIX application has started. You can use th
 
 **Example**
 ```bash
-buy  USD/BRL 100 stopPrice 1.5 
+buy USD/BRL 100 stopPrice 1.5 1.7
+```
+```bash
+sell USD/BRL 100 stopPrice 1.7 1.4
 ```
 **2.Limit order:** Price must be provided and it must be less than or equal to the current market price.
 
